@@ -1,6 +1,21 @@
 # 📋 What's New - FinalGrade.io Update History
 
-**Last Updated**: December 2025
+**Last Updated**: March 2026
+
+---
+
+## 🆕 v26.1.0 (March 2026)
+
+### 📱 Mobile + Student View Improvements
+- **Taskbar Redesign** - New left-aligned brand layout, quick actions, settings, and help menus
+- **Modern Dropdown Menus** - Animated taskbar dropdowns with direct actions and cleaner spacing
+- **Onboarding Popup** - Introduction modal now appears for first-time users and after reset
+- **Loading Screen Refresh** - Enhanced launch visuals with latest-status badge and tips
+- **Status Cleanup** - Removed Exempt assignment flag from status options
+- **Pointer Drag Support** - Category reordering now works with touch/pen devices in addition to mouse drag-and-drop
+- **Student Weight Layout** - Category weight now appears on a second line as plain gray text (`Weight: #`)
+- **Hide Zero Weights** - Weights with value `0` remain hidden in student view
+- **Header Average Positioning** - Category average moved to the right side next to the expand arrows
 
 ---
 

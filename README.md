@@ -2,7 +2,7 @@
 
 > **A powerful, modern grade calculation tool for teachers and students**
 
-[![Version](https://img.shields.io/badge/Version-26.0.0--beta-blue.svg)](UPDATES.md)
+[![Version](https://img.shields.io/badge/Version-26.1.0-blue.svg)](UPDATES.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.md)
 [![Status](https://img.shields.io/badge/Status-Active-success.svg)](STATUS.md)
 
@@ -243,7 +243,7 @@ Each category's grade is calculated as:
 
 Certain statuses automatically affect grades:
 - **Missing/Cheated**: Counts as 0%
-- **Dropped/Excused/Exempt**: Excluded from calculation
+- **Dropped/Excused**: Excluded from calculation
 - **Late/Incomplete**: Included in calculation (use comment for notes)
 
 ### Grade Capping
@@ -450,9 +450,9 @@ A: Weights of 0% or blank are hidden. Set a weight value to display.
 
 ## 📈 Version History
 
-### v26.0.0-beta (December 2025) - Current
+### v26.1.0 (March 2026) - Current
 
-**Latest Release with Major Improvements**
+**Latest Release with Mobile + Student View Improvements**
 
 - Complete UI redesign with modern animations
 - Improved loading screen with visual feedback
@@ -466,6 +466,12 @@ A: Weights of 0% or blank are hidden. Set a weight value to display.
 - Reset Everything functionality
 - Pop-out animations for all modals
 - Reset confirmation modal
+- Mobile pointer drag support for category reordering
+- Student weight line now displays as gray `Weight: #` text
+- Student category averages moved to header right side
+- Modern taskbar redesign with quick-action menus and dropdown panels
+- Introduction popup for first-time users and post-reset onboarding
+- Refreshed loading screen and expanded information popups
 
 ### v25.4.0 (November 2025)
 
@@ -541,7 +547,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Important Documents
 
 - **[📋 UPDATES.md](UPDATES.md)** - Complete version history, release notes, and what's new
-  - v26.0.0-beta (December 2025) - Latest release
+  - v26.1.0 (March 2026) - Latest release
   - v25.4.0 (November 2025) - Previous release
   - v25.3.0 (October 2025)
   - v25.2.0 (August 2025)
@@ -582,7 +588,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-### Latest Updates (v26.0.0-beta)
+### Latest Updates (v26.1.0)
 
 - ✨ Added comprehensive pop-out animations
 - 🎯 Fixed weight display formatting
