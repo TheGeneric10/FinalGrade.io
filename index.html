@@ -92,20 +92,53 @@
 </head>
 <body>
     <div id="loadingScreen" class="loading">
-        <div class="loading-content">
+        <div class="loading-content modern-loading">
+            <div class="loading-badge">LATEST • MAR 2026</div>
             <div class="loading-fire">🔥</div>
             <div class="loading-text">FinalGrade.io</div>
+            <div class="loading-subtext">Preparing dashboard, sync, and smart grading tools...</div>
             <div class="loading-bar">
                 <div class="loading-bar-fill"></div>
             </div>
-            <div class="loading-subtext">Loading your grade calculator...</div>
+            <div class="loading-tip">Tip: Use Teacher View to adjust categories, then refresh Student View instantly.</div>
         </div>
     </div>
     <div id="headerContainer">
         <div id="taskbar">
-            <div id="taskbarTitle">
-                <span style="font-size: 32px; margin-right: 8px;">🔥</span>
-                FinalGrade.io
+            <div id="taskbarBrand">
+                <span class="taskbar-logo">🔥</span>
+                <div>
+                    <div id="taskbarTitle">FinalGrade.io</div>
+                    <div class="taskbar-subtitle">Grade Command Center</div>
+                </div>
+            </div>
+            <div id="taskbarCenterStatus">
+                <span class="taskbar-chip latest">LATEST 26.1 • MAR 2026</span>
+                <span class="taskbar-chip">Live Autosave</span>
+                <span class="taskbar-chip">Mobile Ready</span>
+            </div>
+            <div id="taskbarActions">
+                <button class="taskbar-menu-btn" id="quickActionsBtn"><span class="material-icons">bolt</span> Quick Actions</button>
+                <button class="taskbar-menu-btn" id="taskbarSettingsBtn"><span class="material-icons">settings</span> Settings</button>
+                <button class="taskbar-menu-btn" id="taskbarHelpBtn"><span class="material-icons">help</span> Help</button>
+            </div>
+        </div>
+
+        <div id="taskbarDropdowns">
+            <div class="taskbar-dropdown" id="quickActionsMenu">
+                <button data-taskbar-action="whats-new"><span class="material-icons">new_releases</span> View What's New</button>
+                <button data-taskbar-action="teacher"><span class="material-icons">school</span> Go to Teacher View</button>
+                <button data-taskbar-action="student"><span class="material-icons">person</span> Go to Student View</button>
+            </div>
+            <div class="taskbar-dropdown" id="taskbarSettingsMenu">
+                <button data-taskbar-action="toggle-animations"><span class="material-icons">motion_photos_on</span> Toggle Animations</button>
+                <button data-taskbar-action="open-reset"><span class="material-icons">restart_alt</span> Reset Website</button>
+                <button data-taskbar-action="open-welcome"><span class="material-icons">celebration</span> Open Introduction</button>
+            </div>
+            <div class="taskbar-dropdown" id="taskbarHelpMenu">
+                <button data-taskbar-action="privacy"><span class="material-icons">verified_user</span> Privacy Policy</button>
+                <button data-taskbar-action="terms"><span class="material-icons">gavel</span> Terms of Service</button>
+                <button data-taskbar-action="shortcuts"><span class="material-icons">keyboard</span> Keyboard Tips</button>
             </div>
         </div>
     </div>
@@ -186,7 +219,7 @@
     <div id="studentView" class="view-content">
         <div class="container">
             <h1>Student View - Grade Summary</h1>
-            <div id="studentClassName" style="text-align: center; font-size: 13px; color: #999; margin-bottom: 20px; min-height: 20px; font-weight: 500;"></div>
+            <div id="studentClassName"></div>
             
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
                 <button id="refreshStudentGradeBtn" class="refresh-btn" style="margin: 0; flex-shrink: 0;">
@@ -308,7 +341,7 @@
 
     <div id="appFooter">
         <span style="font-size: 18px;">🔥</span>
-        <span>2026 FinalGrade.io. All Rights Reserved. | Version 26.0.0-beta</span>
+        <span>2026 FinalGrade.io. All Rights Reserved. | Version 26.1.0</span>
         <div style="margin-left: auto; display: flex; gap: 16px; font-size: 12px;">
             <a href="#" id="whatsNewLink" style="color: #1976d2; text-decoration: none; cursor: pointer;">What's New?</a>
             <a href="#" id="privacyLink" style="color: #1976d2; text-decoration: none; cursor: pointer;">Privacy Policy</a>
@@ -322,7 +355,7 @@
             <span class="close-modal-btn material-icons">close</span>
             <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">What's New?</h2>
             <div style="max-height: 450px; overflow-y: auto; padding-right: 12px;">
-                <h3 style="margin-top: 0; color: #1976d2; font-size: 16px;">🆕 Version 26.0.0-beta (December 2025)</h3>
+                <h3 style="margin-top: 0; color: #1976d2; font-size: 16px;">🆕 Version 26.1.0 (March 2026) <span class="latest-pill">LATEST</span></h3>
                 <p><strong>Latest Release - Current Version</strong></p>
                 <ul style="margin: 8px 0; padding-left: 20px; font-size: 14px;">
                     <li>Complete redesign of UI with modern animations</li>
@@ -330,6 +363,12 @@
                     <li>Enhanced modal dialogs with smooth transitions</li>
                     <li>Custom scrollbars throughout the application</li>
                     <li>Better responsive design for mobile devices</li>
+                    <li>Mobile pointer drag-and-drop for category reordering</li>
+                    <li>Student category weights moved to a clean second line</li>
+                    <li>Student category averages shown on header right side</li>
+                    <li>New modern taskbar with quick menus and status chips</li>
+                    <li>First-time introduction popup for new users and resets</li>
+                    <li>Refreshed loading screen with modern launch visuals</li>
                 </ul>
 
                 <h3 style="color: #1976d2; font-size: 16px;">Version 25.4.0 (November 2025)</h3>
@@ -488,6 +527,35 @@
         </div>
     </div>
 
+
+    <div id="shortcutsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-btn material-icons">close</span>
+            <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">Keyboard & Workflow Tips</h2>
+            <ul style="font-size: 14px; line-height: 1.8; padding-left: 20px;">
+                <li><strong>Teacher → Student:</strong> use tabs to preview student output quickly.</li>
+                <li><strong>Refresh Current Grade:</strong> instantly sync newest grading changes.</li>
+                <li><strong>Drag Categories:</strong> mouse on desktop, touch/pen on mobile.</li>
+                <li><strong>Use comments:</strong> add context so students understand each grade.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="introModal" class="modal">
+        <div class="modal-content" style="max-width: 560px;">
+            <h2 style="margin-top: 0; color: #1976d2;">Welcome to FinalGrade.io 🔥</h2>
+            <p style="color: #555;">Quick intro before you begin:</p>
+            <div style="display: grid; gap: 10px; font-size: 14px; color: #444;">
+                <div>✅ Create/edit categories and assignment weights in <strong>Teacher View</strong>.</div>
+                <div>✅ Switch to <strong>Student View</strong> to preview exactly what students see.</div>
+                <div>✅ Open <strong>Quick Actions</strong> in the taskbar for fast navigation and settings.</div>
+            </div>
+            <div class="modal-buttons" style="margin-top: 18px;">
+                <button id="closeIntroBtn" style="width: 100%;">Get Started</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Hide loading screen when DOM is ready and fonts are loaded
         window.addEventListener('load', function() {
@@ -503,6 +571,60 @@
                     document.body.classList.remove('loading');
                 }, 500);
             });
+        });
+
+        const openModalById = (id) => {
+            const m = document.getElementById(id);
+            if (m) m.style.display = 'block';
+        };
+
+        const closeAllTaskbarMenus = () => {
+            document.querySelectorAll('.taskbar-dropdown.open').forEach(el => el.classList.remove('open'));
+        };
+
+        const bindTaskbarMenu = (btnId, menuId) => {
+            const btn = document.getElementById(btnId);
+            const menu = document.getElementById(menuId);
+            if (!btn || !menu) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const willOpen = !menu.classList.contains('open');
+                closeAllTaskbarMenus();
+                if (willOpen) menu.classList.add('open');
+            });
+        };
+
+        bindTaskbarMenu('quickActionsBtn', 'quickActionsMenu');
+        bindTaskbarMenu('taskbarSettingsBtn', 'taskbarSettingsMenu');
+        bindTaskbarMenu('taskbarHelpBtn', 'taskbarHelpMenu');
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#taskbar') && !e.target.closest('#taskbarDropdowns')) closeAllTaskbarMenus();
+        });
+
+        document.querySelectorAll('[data-taskbar-action]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.getAttribute('data-taskbar-action');
+                closeAllTaskbarMenus();
+                if (action === 'whats-new') openModalById('whatsNewModal');
+                if (action === 'teacher') document.querySelector(".tab-link[data-view='teacher']")?.click();
+                if (action === 'student') document.querySelector(".tab-link[data-view='student']")?.click();
+                if (action === 'open-reset') document.getElementById('resetEverythingBtn')?.click();
+                if (action === 'privacy') openModalById('privacyModal');
+                if (action === 'terms') openModalById('termsModal');
+                if (action === 'shortcuts') openModalById('shortcutsModal');
+                if (action === 'open-welcome') openModalById('introModal');
+                if (action === 'toggle-animations') document.body.classList.toggle('reduce-motion');
+            });
+        });
+
+        const introSeenKey = 'fg_intro_seen_v2';
+        if (!localStorage.getItem(introSeenKey)) {
+            openModalById('introModal');
+        }
+        document.getElementById('closeIntroBtn')?.addEventListener('click', () => {
+            localStorage.setItem(introSeenKey, '1');
+            document.getElementById('introModal').style.display = 'none';
         });
 
         // Info Modal Links

@@ -13,6 +13,7 @@ const STORAGE_KEY = "gradeCalculatorData_v2";
 const STUDENT_EXPANSIONS_KEY = "studentCategoryExpansions_v1";
 const TEACHER_EXPANSIONS_KEY = "teacherCategoryExpansions_v1";
 let maxGradeCapacity = 100;
+let pointerDragState = null;
 
 // DOM refs
 const categoryModal = document.getElementById("categoryModal");
@@ -297,11 +298,70 @@ function createCategory(name, weight) {
     });
     catDiv.addEventListener("dragend", () => draggedCategory = null);
 
+    const clearPointerDragIndicators = () => {
+        document.querySelectorAll('.category.pointer-drop-target').forEach(el => el.classList.remove('pointer-drop-target'));
+        catDiv.classList.remove('pointer-dragging');
+    };
+
+    const startPointerDrag = (event) => {
+        if (event.pointerType === 'mouse') return;
+        if (!event.isPrimary) return;
+        if (event.target.closest('.cat-controls, .material-icons, button, input, select')) return;
+
+        pointerDragState = {
+            dragged: catDiv,
+            pointerId: event.pointerId,
+            lastX: event.clientX,
+            lastY: event.clientY,
+            target: null
+        };
+
+        catDiv.classList.add('pointer-dragging');
+        try { catDiv.setPointerCapture(event.pointerId); } catch (e) { }
+    };
+
+    const movePointerDrag = (event) => {
+        if (!pointerDragState || pointerDragState.dragged !== catDiv || pointerDragState.pointerId !== event.pointerId) return;
+        pointerDragState.lastX = event.clientX;
+        pointerDragState.lastY = event.clientY;
+
+        document.querySelectorAll('.category.pointer-drop-target').forEach(el => el.classList.remove('pointer-drop-target'));
+        const hoverEl = document.elementFromPoint(event.clientX, event.clientY);
+        const targetCategory = hoverEl ? hoverEl.closest('.category') : null;
+        if (targetCategory && targetCategory !== catDiv && targetCategory.parentNode === categoriesContainer) {
+            targetCategory.classList.add('pointer-drop-target');
+            pointerDragState.target = targetCategory;
+        } else {
+            pointerDragState.target = null;
+        }
+    };
+
+    const endPointerDrag = (event) => {
+        if (!pointerDragState || pointerDragState.dragged !== catDiv || pointerDragState.pointerId !== event.pointerId) return;
+        const targetCategory = pointerDragState.target;
+        const pointerY = pointerDragState.lastY;
+
+        if (targetCategory && targetCategory.parentNode === categoriesContainer) {
+            const rect = targetCategory.getBoundingClientRect();
+            const before = pointerY < (rect.top + rect.height / 2);
+            if (before) targetCategory.parentNode.insertBefore(catDiv, targetCategory);
+            else targetCategory.parentNode.insertBefore(catDiv, targetCategory.nextSibling);
+            saveData();
+        }
+
+        clearPointerDragIndicators();
+        pointerDragState = null;
+    };
+
     const assignmentsDiv = document.createElement("div");
     assignmentsDiv.className = "assignments";
 
     const headerDiv = document.createElement("div");
     headerDiv.className = "category-header";
+    headerDiv.addEventListener('pointerdown', startPointerDrag);
+    headerDiv.addEventListener('pointermove', movePointerDrag);
+    headerDiv.addEventListener('pointerup', endPointerDrag);
+    headerDiv.addEventListener('pointercancel', endPointerDrag);
 
     const leftContainer = document.createElement("div");
     leftContainer.style.display = "flex";
@@ -317,7 +377,6 @@ function createCategory(name, weight) {
     const infoSpan = document.createElement("span");
     infoSpan.className = "cat-info";
 
-    const weightDisplay = (weight === "" || weight === null || weight === undefined) ? " " : formatNumberTrim(weight);
     infoSpan.innerHTML = `${escapeHtml(name)} <span class="cat-percentage"> </span>`;
 
     leftContainer.appendChild(toggleIcon);
@@ -474,7 +533,6 @@ function addAssignmentRow(assignmentsDiv, assignmentData = {}) {
         <option value="Excused">Excused</option>
         <option value="Dropped">Dropped</option>
         <option value="Cheated">Cheated</option>
-        <option value="Exempt">Exempt</option>
     `;
 
     const statusDropdownSecondary = document.createElement("select");
@@ -687,7 +745,7 @@ function updateAssignmentLineColor(assignmentDiv, status1, status2, status3) {
     const s = effective.toLowerCase();
     if (["missing", "cheated", "incomplete", "late"].includes(s)) assignmentDiv.classList.add('status-red');
     else if (["turnedin", "turned in"].includes(s)) assignmentDiv.classList.add('status-green');
-    else if (["dropped", "excused", "exempt"].includes(s)) assignmentDiv.classList.add('status-blue');
+    else if (["dropped", "excused"].includes(s)) assignmentDiv.classList.add('status-blue');
     else assignmentDiv.classList.add('status-gray');
 }
 
@@ -751,7 +809,7 @@ function calculateAll() {
             const total = parseFloat(totalRaw);
             const mult = parseFloat(multRaw) || 1;
 
-            const excludeSet = ["Dropped", "Excused", "Exempt"];
+            const excludeSet = ["Dropped", "Excused"];
             if (excludeSet.includes(status1) || excludeSet.includes(status2) || excludeSet.includes(status3)) return;
             if (parsed.statuses && parsed.statuses.some(s => excludeSet.includes(s))) return;
 
@@ -933,7 +991,9 @@ function populateStudentView() {
     categoryElements.forEach(catElement => {
         const categoryName = catElement.getAttribute("data-name");
         const weightRaw = catElement.getAttribute("data-weight");
-        const categoryWeight = (weightRaw === "" || weightRaw === null || weightRaw === undefined) ? "" : formatNumberTrim(weightRaw);
+        const weightNum = parseFloat(weightRaw);
+        const shouldShowWeight = !isNaN(weightNum) && weightNum !== 0;
+        const categoryWeight = shouldShowWeight ? formatNumberTrim(weightRaw) : "";
         const categoryAverageText = catElement.querySelector(".cat-percentage") ? catElement.querySelector(".cat-percentage").textContent : " ";
         const isEnabled = catElement.getAttribute("data-enabled") !== "false";
 
@@ -953,9 +1013,22 @@ function populateStudentView() {
         headerLeftContent.style.alignItems = "center";
         headerLeftContent.style.gap = "8px";
         
+        const headerTextWrap = document.createElement("div");
+        headerTextWrap.className = "student-category-header-text";
+
         const headerText = document.createElement("span");
-        headerText.innerHTML = `${escapeHtml(categoryName)} (${escapeHtml(categoryWeight)}%) <span class="cat-percentage">${categoryAverageText}</span>`;
-        headerLeftContent.appendChild(headerText);
+        headerText.className = "student-category-title";
+        headerText.textContent = categoryName;
+
+        if (categoryWeight) {
+            const weightLine = document.createElement("div");
+            weightLine.className = "student-category-weight";
+            weightLine.textContent = `Weight: ${categoryWeight}`;
+            headerTextWrap.appendChild(weightLine);
+        }
+
+        headerTextWrap.prepend(headerText);
+        headerLeftContent.appendChild(headerTextWrap);
 
         header.appendChild(headerLeftContent);
 
@@ -963,6 +1036,11 @@ function populateStudentView() {
         headerRightContent.style.display = "flex";
         headerRightContent.style.alignItems = "center";
         headerRightContent.style.gap = "8px";
+
+        const categoryAverage = document.createElement("span");
+        categoryAverage.className = "cat-percentage student-category-average";
+        categoryAverage.textContent = categoryAverageText;
+        headerRightContent.appendChild(categoryAverage);
 
         const expandIcon = document.createElement("span");
         expandIcon.className = "material-icons expand-icon";
@@ -1021,7 +1099,7 @@ function populateStudentView() {
                     (status1 && status1.trim() !== "") ? status1.replace(/\s+/g, '').toLowerCase() : "";
             if (["missing", "cheated", "incomplete", "late"].includes(key)) statusClass = "missing";
             else if (["turnedin", "turned in"].includes(key)) statusClass = "turnedin";
-            else if (["dropped", "excused", "exempt"].includes(key)) statusClass = "dropped";
+            else if (["dropped", "excused"].includes(key)) statusClass = "dropped";
             row.classList.add(`status-${statusClass}`);
 
             row.setAttribute("data-name", assnName);
@@ -1423,10 +1501,23 @@ function setupModalControls() {
             const infoSpan = currentCategoryElement.querySelector('.cat-info');
             if (infoSpan) {
                 const catPct = infoSpan.querySelector(".cat-percentage");
-                const weightDisplay = (weight === "" || weight === null || weight === undefined) ? " " : formatNumberTrim(weight);
-                const weightText = (weight === "" || weight === null || weight === undefined) ? "" : `(<span class="cat-weight">${escapeHtml(weightDisplay)}</span>%)`;
-                infoSpan.innerHTML = `${escapeHtml(name)} ${weightText} `;
+                infoSpan.innerHTML = `${escapeHtml(name)} `;
                 if (catPct) infoSpan.appendChild(catPct);
+
+                let weightInfo = infoSpan.querySelector('.cat-weight-info');
+                if (!weightInfo) {
+                    weightInfo = document.createElement('div');
+                    weightInfo.className = 'cat-weight-info';
+                    infoSpan.appendChild(weightInfo);
+                }
+
+                if (weight !== "" && weight !== null && weight !== undefined && String(weight) !== "0") {
+                    weightInfo.textContent = `Weight: ${formatNumberTrim(weight)}`;
+                    weightInfo.classList.add('visible');
+                } else {
+                    weightInfo.textContent = '';
+                    weightInfo.classList.remove('visible');
+                }
             }
 
             try {
@@ -1485,6 +1576,7 @@ function setupModalControls() {
             localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(STUDENT_EXPANSIONS_KEY);
             localStorage.removeItem(TEACHER_EXPANSIONS_KEY);
+            localStorage.removeItem("fg_intro_seen_v2");
             location.reload();
         });
     }
