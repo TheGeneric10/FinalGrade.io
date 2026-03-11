@@ -1473,40 +1473,80 @@ function updateCategoryCommentDisplay(catDiv) {
 
 function showAssignmentsMultiselect() {
     const container = document.getElementById("assignmentsMultiselectContainer");
+    if (!container) return;
     container.innerHTML = "";
-    
-    const categories = document.querySelectorAll(".category");
-    let assignmentCount = 0;
-    
-    categories.forEach(cat => {
-        const catName = cat.getAttribute("data-name");
-        const assignments = cat.querySelectorAll(".assignment");
-        
-        assignments.forEach((asn, idx) => {
-            const assnName = asn.querySelector(".assn-name-input") ? asn.querySelector(".assn-name-input").value : "Unnamed";
-            
-            const item = document.createElement("div");
-            item.className = "multiselect-item";
-            item.innerHTML = `
-                <input type="checkbox" class="assignment-checkbox" data-category-name="${catName}" data-assignment-index="${idx}">
-                <label>${escapeHtml(assnName)} (${escapeHtml(catName)})</label>
+
+    const categories = Array.from(document.querySelectorAll(".category"));
+    let hasAssignments = false;
+
+    categories.forEach((cat) => {
+        const catName = cat.getAttribute("data-name") || "Untitled Category";
+        const assignments = Array.from(cat.querySelectorAll(".assignment"));
+        const group = document.createElement("details");
+        group.className = "all-assignments-category";
+        group.open = true;
+
+        const summary = document.createElement("summary");
+        summary.textContent = `${catName} (${assignments.length})`;
+        group.appendChild(summary);
+
+        const body = document.createElement("div");
+        body.className = "all-assignments-body";
+
+        if (!assignments.length) {
+            const empty = document.createElement("div");
+            empty.className = "all-assignments-empty";
+            empty.textContent = "No assignments in this category.";
+            body.appendChild(empty);
+        }
+
+        assignments.forEach((asn) => {
+            hasAssignments = true;
+            const name = asn.querySelector(".assn-name-input")?.value?.trim() || "Unnamed Assignment";
+            const graded = asn.querySelector(".graded-pts-input")?.value?.toString().trim() || "-";
+            const total = asn.querySelector(".total-pts-input")?.value?.toString().trim() || "-";
+            const multiplier = asn.querySelector(".multiplier-pts-input")?.value?.toString().trim() || "1";
+
+            const s1 = asn.querySelector(".status-dropdown-main")?.value || "";
+            const s2 = asn.querySelector(".status-dropdown-secondary")?.value || "";
+            const s3 = asn.querySelector(".status-dropdown-tertiary")?.value || "";
+            const statusParts = [];
+            if (s1) statusParts.push(normalizeStatusLabel(s1));
+            if (s1 === "Late" && s2) statusParts.push(normalizeStatusLabel(s2));
+            if (s2 === "TurnedIn" && s3) statusParts.push(normalizeStatusLabel(s3));
+            const statusText = statusParts.length ? statusParts.join(" / ") : "NOT SET";
+
+            const row = document.createElement("div");
+            row.className = "all-assignments-row";
+            row.innerHTML = `
+                <div class="all-assignments-name">${escapeHtml(name)}</div>
+                <div class="all-assignments-meta">${escapeHtml(graded)} / ${escapeHtml(total)} • x${escapeHtml(multiplier)} • ${escapeHtml(statusText)}</div>
             `;
-            container.appendChild(item);
-            assignmentCount++;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "all-assignments-delete";
+            deleteBtn.title = "Delete assignment";
+            deleteBtn.innerHTML = '<span class="material-icons">delete</span>';
+            deleteBtn.addEventListener("click", () => {
+                asn.remove();
+                saveData();
+                showAssignmentsMultiselect();
+                if (document.getElementById("studentView").classList.contains("active")) populateStudentView();
+            });
+
+            row.appendChild(deleteBtn);
+            body.appendChild(row);
         });
+
+        group.appendChild(body);
+        container.appendChild(group);
     });
-    
-    if (assignmentCount === 0) {
+
+    if (!hasAssignments) {
         container.innerHTML = "<p style='text-align: center; padding: 20px; color: #999;'>No assignments available</p>";
     }
-    
-    const selectAllCheckbox = document.getElementById("selectAllAssignmentsCheckbox");
-    selectAllCheckbox.checked = false;
-    selectAllCheckbox.addEventListener("change", () => {
-        const checkboxes = document.querySelectorAll(".assignment-checkbox");
-        checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
-    });
-    
+
     document.getElementById("removeAssignmentsModal").style.display = "block";
 }
 
@@ -1544,38 +1584,6 @@ function showCategoriesMultiselect() {
     document.getElementById("removeCategoriesModal").style.display = "block";
 }
 
-function deleteSelectedAssignments() {
-    const checkboxes = document.querySelectorAll(".assignment-checkbox:checked");
-    const toDelete = [];
-    
-    checkboxes.forEach(cb => {
-        toDelete.push({
-            categoryName: cb.getAttribute("data-category-name"),
-            assignmentIndex: parseInt(cb.getAttribute("data-assignment-index"))
-        });
-    });
-    
-    if (toDelete.length === 0) {
-        warn("No assignments selected");
-        return;
-    }
-    
-    toDelete.sort((a, b) => b.assignmentIndex - a.assignmentIndex);
-    
-    toDelete.forEach(item => {
-        const cat = Array.from(document.querySelectorAll(".category")).find(c => c.getAttribute("data-name") === item.categoryName);
-        if (cat) {
-            const assignments = cat.querySelectorAll(".assignment");
-            if (assignments[item.assignmentIndex]) {
-                assignments[item.assignmentIndex].remove();
-            }
-        }
-    });
-    
-    saveData();
-    document.getElementById("removeAssignmentsModal").style.display = "none";
-}
-
 function deleteSelectedCategories() {
     const checkboxes = document.querySelectorAll(".category-checkbox:checked");
     const categories = Array.from(document.querySelectorAll(".category"));
@@ -1607,19 +1615,19 @@ function setupModalControls() {
     if (detailsCloseBtn) detailsCloseBtn.addEventListener('click', () => hideModal(assignmentDetailsModal));
 
     // Bulk delete handlers
+    const viewAllAssignmentsBtn = document.getElementById("viewAllAssignmentsBtn");
     const removeSelectedAssignmentsBtn = document.getElementById("removeSelectedAssignmentsBtn");
     const removeSelectedCategoriesBtn = document.getElementById("removeSelectedCategoriesBtn");
-    const confirmDeleteAssignmentsBtn = document.getElementById("confirmDeleteAssignmentsBtn");
     const confirmDeleteCategoriesBtn = document.getElementById("confirmDeleteCategoriesBtn");
 
+    if (viewAllAssignmentsBtn) {
+        viewAllAssignmentsBtn.addEventListener('click', showAssignmentsMultiselect);
+    }
     if (removeSelectedAssignmentsBtn) {
-        removeSelectedAssignmentsBtn.addEventListener('click', showAssignmentsMultiselect);
+        removeSelectedAssignmentsBtn.style.display = 'none';
     }
     if (removeSelectedCategoriesBtn) {
-        removeSelectedCategoriesBtn.addEventListener('click', showCategoriesMultiselect);
-    }
-    if (confirmDeleteAssignmentsBtn) {
-        confirmDeleteAssignmentsBtn.addEventListener('click', deleteSelectedAssignments);
+        removeSelectedCategoriesBtn.style.display = 'none';
     }
     if (confirmDeleteCategoriesBtn) {
         confirmDeleteCategoriesBtn.addEventListener('click', deleteSelectedCategories);

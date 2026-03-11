@@ -247,12 +247,16 @@
                 <span class="material-icons">refresh</span> Reset Everything
             </button>
 
-            <div class="bulk-action-buttons">
-                <button id="removeSelectedAssignmentsBtn" class="bulk-action-btn">
-                    <span class="material-icons">delete</span> Remove Selected Assignments
+            <button id="viewAllAssignmentsBtn" class="bulk-action-btn">
+                <span class="material-icons">format_list_bulleted</span> All Assignments
+            </button>
+
+            <div class="bulk-action-buttons legacy-hidden" aria-hidden="true">
+                <button id="removeSelectedAssignmentsBtn" class="bulk-action-btn" tabindex="-1">
+                    <span class="material-icons">delete</span> Remove Selected Assignments (Legacy)
                 </button>
-                <button id="removeSelectedCategoriesBtn" class="bulk-action-btn">
-                    <span class="material-icons">delete</span> Remove Selected Categories
+                <button id="removeSelectedCategoriesBtn" class="bulk-action-btn" tabindex="-1">
+                    <span class="material-icons">delete</span> Remove Selected Categories (Legacy)
                 </button>
             </div>
 
@@ -562,13 +566,9 @@
     <div id="removeAssignmentsModal" class="multiselect-modal">
         <div class="multiselect-modal-content">
             <span class="close-modal-btn material-icons" onclick="document.getElementById('removeAssignmentsModal').style.display='none'">close</span>
-            <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">Select Assignments to Remove</h2>
-            <div style="padding: 10px 0; border-bottom: 1px solid #eee; margin-bottom: 5px;">
-                <label style="cursor: pointer; padding: 0 15px; display: flex; align-items: center;"><input type="checkbox" id="selectAllAssignmentsCheckbox" style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> <strong>Select All</strong></label>
-            </div>
-            <div id="assignmentsMultiselectContainer" class="multiselect-items-container"></div>
+            <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">All Assignments</h2>
+            <div id="assignmentsMultiselectContainer" class="all-assignments-container"></div>
             <div class="multiselect-modal-buttons">
-                <button class="multiselect-delete-btn" id="confirmDeleteAssignmentsBtn">Delete Selected</button>
                 <button class="multiselect-cancel-btn" onclick="document.getElementById('removeAssignmentsModal').style.display='none'">Cancel</button>
             </div>
         </div>
