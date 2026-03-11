@@ -115,8 +115,8 @@
             </div>
             <nav id="taskbarCenterStatus" aria-label="Primary">
                 <button class="taskbar-chip nav-chip active" data-view="home">Home</button>
-                <button class="taskbar-chip nav-chip" data-view="teacher">Gradebook #Teacher</button>
-                <button class="taskbar-chip nav-chip" data-view="student">Gradebook #Student</button>
+                <button class="taskbar-chip nav-chip" data-view="teacher">Teacher Gradebook</button>
+                <button class="taskbar-chip nav-chip" data-view="student">Student Gradebook</button>
                 <button class="taskbar-chip nav-chip" data-view="whatsNew">What's New</button>
                 <button class="taskbar-chip nav-chip" data-view="privacy">Privacy</button>
                 <button class="taskbar-chip nav-chip" data-view="terms">Terms</button>
@@ -151,25 +151,63 @@
 
 
     <div id="homeView" class="view-content active page-view">
-        <div class="container home-hero">
-            <h1>Welcome to FinalGrade.io 26.1.10</h1>
-            <p>Spring 2026 command center refresh with a cleaner blue layout, modern controls, and dedicated pages for policy and updates.</p>
+        <div class="container home-hero full-home">
+            <div class="home-top">
+                <div>
+                    <h1>Welcome to FinalGrade.io 26.1.10</h1>
+                    <p>March 2026 release with cleaner layout, stronger navigation, and better mobile interaction across gradebook workflows.</p>
+                </div>
+                <div class="home-actions">
+                    <button class="taskbar-chip nav-chip" data-view="teacher">Open Teacher Gradebook</button>
+                    <button class="taskbar-chip nav-chip" data-view="student">Open Student Gradebook</button>
+                    <button class="taskbar-chip nav-chip" data-view="whatsNew">Open What's New</button>
+                </div>
+            </div>
             <div class="home-news-grid">
                 <section class="news-card">
-                    <h3>What’s New</h3>
-                    <p>Browse feature drops, patches, mobile improvements, and workflow tools from the March 2026 release.</p>
-                    <button class="taskbar-chip nav-chip" data-view="whatsNew">Open What's New</button>
+                    <h3>Teacher Workspace</h3>
+                    <p>Create categories, add assignments, tune status tracking, and calculate weighted grades quickly.</p>
                 </section>
                 <section class="news-card">
-                    <h3>Quick Start</h3>
-                    <p>Use Gradebook #Teacher to manage categories and assignments, then switch to Gradebook #Student to preview output.</p>
+                    <h3>Student Workspace</h3>
+                    <p>Review assignment outcomes, track status progress, and estimate final standing in real-time.</p>
+                </section>
+                <section class="news-card">
+                    <h3>Platform Pages</h3>
+                    <p>What's New, Privacy, Terms, and Settings are available as dedicated pages from the top taskbar.</p>
                 </section>
             </div>
         </div>
     </div>
 
     <div id="whatsNewView" class="view-content page-view">
-        <div class="container policy-page"><h1>What's New — 26.1.10 (March 2026)</h1><ul><li>New Home page and central navigation flow.</li><li>Quick Actions and Settings redesigned as larger draggable panels.</li><li>Improved touch + pointer handling for category and menu drags.</li><li>Custom number steppers and wheel lock while editing numeric fields.</li><li>Gradebook split routes: #Gradebook/#teacher and #Gradebook/#student.</li><li>Updated legal pages and stricter platform standards.</li><li>Modernized outlined icon style for tool controls.</li><li>Assignment comment previews now adapt to assignment title length.</li><li>Overlay transitions now fade in/out consistently.</li><li>Performance and styling patches across mobile layouts.</li></ul></div>
+        <div class="container policy-page">
+            <h1>What's New</h1>
+            <h2>26.1.10 (Latest) — March 2026</h2>
+            <ul>
+                <li>New Home page and central navigation flow.</li>
+                <li>Quick Actions and Settings redesigned as larger draggable panels.</li>
+                <li>Improved touch + pointer handling for category and menu drags.</li>
+                <li>Gradebook split routes: #Gradebook/#teacher and #Gradebook/#student.</li>
+                <li>Updated legal pages and stricter platform standards.</li>
+                <li>Modernized outlined icon style for tool controls.</li>
+                <li>Assignment comment previews now adapt to assignment title length.</li>
+                <li>Overlay transitions now fade in/out consistently.</li>
+                <li>Performance and styling patches across mobile layouts.</li>
+            </ul>
+
+            <h2>26.0.0-beta pre2.5 — February 2026</h2>
+            <ul>
+                <li>Taskbar workflow and onboarding improvements.</li>
+                <li>Mobile drag-and-drop improvements for categories.</li>
+            </ul>
+
+            <h2>26.0.0-beta pre2.4 — January 2026</h2>
+            <ul>
+                <li>Core grade calculator reliability and UI stability updates.</li>
+                <li>General bug fixes and quality patches.</li>
+            </ul>
+        </div>
     </div>
 
     <div id="privacyView" class="view-content page-view">

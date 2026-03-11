@@ -229,49 +229,21 @@ function getCommentPreviewText(comment, assignmentName) {
     return oneLine.slice(0, Math.max(10, maxLen - 1)).trimEnd() + '…';
 }
 
-function enhanceNumberInput(input) {
-    if (!input || input.dataset.enhancedStepper === '1') return;
-    input.dataset.enhancedStepper = '1';
-    const wrapper = document.createElement('div');
-    wrapper.className = 'number-input-shell';
-    input.parentNode.insertBefore(wrapper, input);
-    wrapper.appendChild(input);
-
-    const controls = document.createElement('div');
-    controls.className = 'number-stepper-controls';
-    const upBtn = document.createElement('button');
-    upBtn.type = 'button';
-    upBtn.className = 'stepper-btn up';
-    upBtn.innerHTML = '&#9650;';
-    const downBtn = document.createElement('button');
-    downBtn.type = 'button';
-    downBtn.className = 'stepper-btn down';
-    downBtn.innerHTML = '&#9660;';
-    controls.appendChild(upBtn);
-    controls.appendChild(downBtn);
-    wrapper.appendChild(controls);
-
-    const step = (dir) => {
-        if (typeof input.stepUp === 'function') {
-            if (dir > 0) input.stepUp(); else input.stepDown();
-        } else {
-            const current = parseFloat(input.value || 0) || 0;
-            const delta = parseFloat(input.step || '1') || 1;
-            input.value = String(current + dir * delta);
-        }
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        input.focus();
-    };
-
-    upBtn.addEventListener('click', () => step(1));
-    downBtn.addEventListener('click', () => step(-1));
+function setupNumberInputWheelLock(input) {
+    if (!input || input.dataset.wheelLocked === '1') return;
+    input.dataset.wheelLocked = '1';
 
     input.addEventListener('wheel', (event) => {
-        if (document.activeElement === input) {
-            event.preventDefault();
-            step(event.deltaY < 0 ? 1 : -1);
+        if (document.activeElement !== input) return;
+        event.preventDefault();
+
+        if (typeof input.stepUp === 'function') {
+            if (event.deltaY < 0) input.stepUp();
+            else input.stepDown();
         }
+
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
     }, { passive: false });
 }
 
@@ -706,7 +678,7 @@ function addAssignmentRow(assignmentsDiv, assignmentData = {}) {
     if (!assignmentData.comment || assignmentData.comment.trim() === "") preview.style.display = "none";
     assignmentDiv.appendChild(preview);
 
-    [totalPtsInput, multiplierPtsInput].forEach(enhanceNumberInput);
+    [gradedPtsInput, totalPtsInput, multiplierPtsInput].forEach(setupNumberInputWheelLock);
 
     assignmentsDiv.appendChild(assignmentDiv);
 
@@ -1770,7 +1742,7 @@ window.onload = function() {
     else navigateToView('home');
 
     setupTaskbarPanelDrag();
-    document.querySelectorAll('input[type="number"]').forEach(enhanceNumberInput);
+    document.querySelectorAll('input[type="number"]').forEach(setupNumberInputWheelLock);
 
     reformatAllDisplays();
 };
