@@ -126,6 +126,16 @@ html {
     border-radius: 999px;
     font-weight: 600;
     letter-spacing: 0.2px;
+    cursor: default;
+  }
+
+  button.taskbar-chip {
+    cursor: pointer;
+  }
+
+  .nav-chip.active {
+    background: rgba(255,255,255,0.32);
+    border-color: rgba(255,255,255,0.85);
   }
 
   .taskbar-chip.latest {
@@ -169,18 +179,25 @@ html {
 
   .taskbar-dropdown {
     display: none;
-    min-width: 250px;
+    min-width: 340px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 12px 28px rgba(0,0,0,0.12);
     border: 1px solid #e8eef6;
     overflow: hidden;
     transform-origin: top right;
+    touch-action: none;
+    cursor: grab;
   }
 
   .taskbar-dropdown.open {
     display: block;
     animation: popOut 0.25s ease;
+  }
+
+  .taskbar-dropdown.dragging {
+    cursor: grabbing;
+    opacity: 0.96;
   }
 
   .taskbar-dropdown button {
@@ -249,6 +266,48 @@ html {
     transition: border-bottom-color 0.3s ease, color 0.3s ease;
     color: #555;
     font-family: 'Inter', sans-serif;
+  }
+
+  .page-view .container {
+    margin-top: 16px;
+  }
+
+  .full-home {
+    max-width: 1100px;
+    min-height: calc(100vh - 170px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 22px;
+  }
+
+  .home-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .home-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .home-news-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .news-card,
+  .policy-page {
+    background: #fff;
+    border: 1px solid #dde8f8;
+    border-radius: 14px;
+    padding: 16px;
   }
   
   .tab-link:hover {
@@ -327,6 +386,99 @@ html {
   
   #addCategoryBtn .material-icons, #calculateBtn .material-icons {
     margin-right: 8px;
+  }
+
+  .teacher-dark-btn {
+    width: 100%;
+    margin: 8px 0;
+    background: #1f2430;
+    color: #fff;
+    border: 2px solid #11151d;
+    border-radius: 999px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .teacher-dark-btn:hover {
+    background: #2a3140;
+    transform: translateY(-1px);
+  }
+
+  .categories-overview-content {
+    max-width: 720px;
+  }
+
+  .categories-overview-list {
+    max-height: 55vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 4px;
+  }
+
+  .category-overview-row {
+    border: 1px solid #d6e3f6;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: #f9fbff;
+  }
+
+  .category-overview-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .category-overview-title {
+    font-weight: 700;
+    color: #24344f;
+    word-break: break-word;
+  }
+
+  .category-overview-weight {
+    font-size: 12px;
+    color: #607187;
+  }
+
+  .category-overview-actions {
+    display: inline-flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .category-overview-actions button {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #c5d7ef;
+    background: #fff;
+    color: #274a78;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .category-overview-actions button.delete {
+    color: #c62828;
+    border-color: #f0b8b8;
+  }
+
+  .category-overview-empty {
+    text-align: center;
+    color: #7b8aa3;
+    padding: 16px;
+    border: 1px dashed #c7d8ee;
+    border-radius: 10px;
+    background: #f7faff;
   }
   
   .refresh-btn {
@@ -432,12 +584,21 @@ html {
     background-color: rgba(0,0,0,0.4);
     padding-top: 60px;
     box-sizing: border-box;
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn 0.25s ease-in;
+  }
+
+  .modal.closing {
+    animation: fadeOut 0.22s ease-out forwards;
   }
   
   @keyframes fadeIn {
     from { background-color: rgba(0,0,0,0); }
     to { background-color: rgba(0,0,0,0.4); }
+  }
+
+  @keyframes fadeOut {
+    from { background-color: rgba(0,0,0,0.4); }
+    to { background-color: rgba(0,0,0,0); }
   }
   
   .modal-content {
@@ -468,7 +629,7 @@ html {
   .modal-content.move-up {
     animation: slideDown 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
-  
+
   @keyframes slideDown {
     from {
       opacity: 1;
