@@ -126,6 +126,16 @@ html {
     border-radius: 999px;
     font-weight: 600;
     letter-spacing: 0.2px;
+    cursor: default;
+  }
+
+  button.taskbar-chip {
+    cursor: pointer;
+  }
+
+  .nav-chip.active {
+    background: rgba(255,255,255,0.32);
+    border-color: rgba(255,255,255,0.85);
   }
 
   .taskbar-chip.latest {
@@ -169,18 +179,25 @@ html {
 
   .taskbar-dropdown {
     display: none;
-    min-width: 250px;
+    min-width: 340px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 12px 28px rgba(0,0,0,0.12);
     border: 1px solid #e8eef6;
     overflow: hidden;
     transform-origin: top right;
+    touch-action: none;
+    cursor: grab;
   }
 
   .taskbar-dropdown.open {
     display: block;
     animation: popOut 0.25s ease;
+  }
+
+  .taskbar-dropdown.dragging {
+    cursor: grabbing;
+    opacity: 0.96;
   }
 
   .taskbar-dropdown button {
@@ -249,6 +266,48 @@ html {
     transition: border-bottom-color 0.3s ease, color 0.3s ease;
     color: #555;
     font-family: 'Inter', sans-serif;
+  }
+
+  .page-view .container {
+    margin-top: 16px;
+  }
+
+  .full-home {
+    max-width: 1100px;
+    min-height: calc(100vh - 170px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 22px;
+  }
+
+  .home-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .home-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .home-news-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .news-card,
+  .policy-page {
+    background: #fff;
+    border: 1px solid #dde8f8;
+    border-radius: 14px;
+    padding: 16px;
   }
   
   .tab-link:hover {
@@ -432,12 +491,21 @@ html {
     background-color: rgba(0,0,0,0.4);
     padding-top: 60px;
     box-sizing: border-box;
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn 0.25s ease-in;
+  }
+
+  .modal.closing {
+    animation: fadeOut 0.22s ease-out forwards;
   }
   
   @keyframes fadeIn {
     from { background-color: rgba(0,0,0,0); }
     to { background-color: rgba(0,0,0,0.4); }
+  }
+
+  @keyframes fadeOut {
+    from { background-color: rgba(0,0,0,0.4); }
+    to { background-color: rgba(0,0,0,0); }
   }
   
   .modal-content {
@@ -468,7 +536,7 @@ html {
   .modal-content.move-up {
     animation: slideDown 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
-  
+
   @keyframes slideDown {
     from {
       opacity: 1;

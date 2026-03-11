@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>🔥</text></svg>" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
         #loadingScreen {
@@ -112,45 +113,116 @@
                     <div class="taskbar-subtitle">Grade Command Center</div>
                 </div>
             </div>
-            <div id="taskbarCenterStatus">
-                <span class="taskbar-chip latest">LATEST 26.1 • MAR 2026</span>
-                <span class="taskbar-chip">Live Autosave</span>
-                <span class="taskbar-chip">Mobile Ready</span>
-            </div>
+            <nav id="taskbarCenterStatus" aria-label="Primary">
+                <button class="taskbar-chip nav-chip active" data-view="home">Home</button>
+                <button class="taskbar-chip nav-chip" data-view="teacher">Teacher Gradebook</button>
+                <button class="taskbar-chip nav-chip" data-view="student">Student Gradebook</button>
+                <button class="taskbar-chip nav-chip" data-view="whatsNew">What's New</button>
+                <button class="taskbar-chip nav-chip" data-view="privacy">Privacy</button>
+                <button class="taskbar-chip nav-chip" data-view="terms">Terms</button>
+                <button class="taskbar-chip nav-chip" data-view="settings">Settings</button>
+            </nav>
+
             <div id="taskbarActions">
-                <button class="taskbar-menu-btn" id="quickActionsBtn"><span class="material-icons">bolt</span> Quick Actions</button>
-                <button class="taskbar-menu-btn" id="taskbarSettingsBtn"><span class="material-icons">settings</span> Settings</button>
-                <button class="taskbar-menu-btn" id="taskbarHelpBtn"><span class="material-icons">help</span> Help</button>
+                <button class="taskbar-menu-btn" id="quickActionsBtn"><span class="material-symbols-outlined">bolt</span> Quick Actions</button>
+                <button class="taskbar-menu-btn" id="taskbarSettingsBtn"><span class="material-symbols-outlined">settings</span> Settings</button>
+                <button class="taskbar-menu-btn" id="taskbarHelpBtn"><span class="material-symbols-outlined">help</span> Help</button>
             </div>
         </div>
 
         <div id="taskbarDropdowns">
             <div class="taskbar-dropdown" id="quickActionsMenu">
-                <button data-taskbar-action="whats-new"><span class="material-icons">new_releases</span> View What's New</button>
-                <button data-taskbar-action="teacher"><span class="material-icons">school</span> Go to Teacher View</button>
-                <button data-taskbar-action="student"><span class="material-icons">person</span> Go to Student View</button>
+                <button data-taskbar-action="whats-new"><span class="material-symbols-outlined">new_releases</span> View What's New</button>
+                <button data-taskbar-action="teacher"><span class="material-symbols-outlined">school</span> Go to Teacher View</button>
+                <button data-taskbar-action="student"><span class="material-symbols-outlined">person</span> Go to Student View</button>
             </div>
             <div class="taskbar-dropdown" id="taskbarSettingsMenu">
-                <button data-taskbar-action="toggle-animations"><span class="material-icons">motion_photos_on</span> Toggle Animations</button>
-                <button data-taskbar-action="open-reset"><span class="material-icons">restart_alt</span> Reset Website</button>
-                <button data-taskbar-action="open-welcome"><span class="material-icons">celebration</span> Open Introduction</button>
+                <button data-taskbar-action="toggle-animations"><span class="material-symbols-outlined">motion_photos_on</span> Toggle Animations</button>
+                <button data-taskbar-action="open-reset"><span class="material-symbols-outlined">restart_alt</span> Reset Website</button>
+                <button data-taskbar-action="open-welcome"><span class="material-symbols-outlined">celebration</span> Open Introduction</button>
             </div>
             <div class="taskbar-dropdown" id="taskbarHelpMenu">
-                <button data-taskbar-action="privacy"><span class="material-icons">verified_user</span> Privacy Policy</button>
-                <button data-taskbar-action="terms"><span class="material-icons">gavel</span> Terms of Service</button>
-                <button data-taskbar-action="shortcuts"><span class="material-icons">keyboard</span> Keyboard Tips</button>
+                <button data-taskbar-action="privacy"><span class="material-symbols-outlined">verified_user</span> Privacy Policy</button>
+                <button data-taskbar-action="terms"><span class="material-symbols-outlined">gavel</span> Terms of Service</button>
+                <button data-taskbar-action="shortcuts"><span class="material-symbols-outlined">keyboard</span> Keyboard Tips</button>
             </div>
         </div>
     </div>
 
-    <div class="nav-container">
-        <div class="tabs">
-            <button class="tab-link active" data-view="teacher">Teacher View</button>
-            <button class="tab-link" data-view="student">Student View</button>
+
+    <div id="homeView" class="view-content active page-view">
+        <div class="container home-hero full-home">
+            <div class="home-top">
+                <div>
+                    <h1>Welcome to FinalGrade.io 26.1.10</h1>
+                    <p>March 2026 release with cleaner layout, stronger navigation, and better mobile interaction across gradebook workflows.</p>
+                </div>
+                <div class="home-actions">
+                    <button class="taskbar-chip nav-chip" data-view="teacher">Open Teacher Gradebook</button>
+                    <button class="taskbar-chip nav-chip" data-view="student">Open Student Gradebook</button>
+                    <button class="taskbar-chip nav-chip" data-view="whatsNew">Open What's New</button>
+                </div>
+            </div>
+            <div class="home-news-grid">
+                <section class="news-card">
+                    <h3>Teacher Workspace</h3>
+                    <p>Create categories, add assignments, tune status tracking, and calculate weighted grades quickly.</p>
+                </section>
+                <section class="news-card">
+                    <h3>Student Workspace</h3>
+                    <p>Review assignment outcomes, track status progress, and estimate final standing in real-time.</p>
+                </section>
+                <section class="news-card">
+                    <h3>Platform Pages</h3>
+                    <p>What's New, Privacy, Terms, and Settings are available as dedicated pages from the top taskbar.</p>
+                </section>
+            </div>
         </div>
     </div>
 
-    <div id="teacherView" class="view-content active">
+    <div id="whatsNewView" class="view-content page-view">
+        <div class="container policy-page">
+            <h1>What's New</h1>
+            <h2>26.1.10 (Latest) — March 2026</h2>
+            <ul>
+                <li>New Home page and central navigation flow.</li>
+                <li>Quick Actions and Settings redesigned as larger draggable panels.</li>
+                <li>Improved touch + pointer handling for category and menu drags.</li>
+                <li>Gradebook split routes: #Gradebook/#teacher and #Gradebook/#student.</li>
+                <li>Updated legal pages and stricter platform standards.</li>
+                <li>Modernized outlined icon style for tool controls.</li>
+                <li>Assignment comment previews now adapt to assignment title length.</li>
+                <li>Overlay transitions now fade in/out consistently.</li>
+                <li>Performance and styling patches across mobile layouts.</li>
+            </ul>
+
+            <h2>26.0.0-beta pre2.5 — February 2026</h2>
+            <ul>
+                <li>Taskbar workflow and onboarding improvements.</li>
+                <li>Mobile drag-and-drop improvements for categories.</li>
+            </ul>
+
+            <h2>26.0.0-beta pre2.4 — January 2026</h2>
+            <ul>
+                <li>Core grade calculator reliability and UI stability updates.</li>
+                <li>General bug fixes and quality patches.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="privacyView" class="view-content page-view">
+        <div class="container policy-page"><h1>Privacy Policy</h1><p><strong>Last Updated: March 2026</strong></p><p>FinalGrade.io stores gradebook data locally in your browser to support offline-first workflow. You are responsible for securing your device and exported records.</p><p>Do not store protected student data unless your district permits local browser storage and your endpoint is encrypted, access-controlled, and policy compliant.</p><p>We prohibit attempts to reverse engineer, scrape, or abuse this interface. Violations may result in blocked access to future hosted versions.</p></div>
+    </div>
+
+    <div id="termsView" class="view-content page-view">
+        <div class="container policy-page"><h1>Terms of Service</h1><p><strong>Last Updated: March 2026</strong></p><p>By using FinalGrade.io, you accept these terms and agree to lawful educational use only. You must verify critical grading decisions before publication.</p><p>Unauthorized automation, malicious input, harassment, and misuse of generated grade artifacts are prohibited. Keep independent backups of all records.</p><p>FinalGrade.io is provided as-is. We disclaim liability for data loss, policy noncompliance, or institutional penalties arising from misuse.</p></div>
+    </div>
+
+    <div id="settingsView" class="view-content page-view">
+        <div class="container policy-page"><h1>Settings</h1><p>Use taskbar settings for animation and reset controls. This page is now a dedicated screen for settings-related guidance and future preferences.</p></div>
+    </div>
+
+    <div id="teacherView" class="view-content">
         <div class="container">
             <h1>Teacher View - Grade Calculator</h1>
             
@@ -341,7 +413,7 @@
 
     <div id="appFooter">
         <span style="font-size: 18px;">🔥</span>
-        <span>2026 FinalGrade.io. All Rights Reserved. | Version 26.1.0</span>
+        <span>2026 TheGeneric. FinalGrade.io. All Rights Reserved. | Version 26.1.10</span>
         <div style="margin-left: auto; display: flex; gap: 16px; font-size: 12px;">
             <a href="#" id="whatsNewLink" style="color: #1976d2; text-decoration: none; cursor: pointer;">What's New?</a>
             <a href="#" id="privacyLink" style="color: #1976d2; text-decoration: none; cursor: pointer;">Privacy Policy</a>
@@ -410,7 +482,7 @@
             <span class="close-modal-btn material-icons">close</span>
             <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">Privacy Policy</h2>
             <div style="max-height: 450px; overflow-y: auto; padding-right: 12px; font-size: 14px; line-height: 1.6;">
-                <p><strong>Last Updated: December 2025</strong></p>
+                <p><strong>Last Updated: March 2026</strong></p>
                 
                 <h3 style="color: #1976d2;">1. Information We Collect</h3>
                 <p>FinalGrade.io stores all your grade data locally in your browser. We do not collect or transmit any personal information to external servers.</p>
@@ -441,7 +513,7 @@
             <span class="close-modal-btn material-icons">close</span>
             <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">Terms of Service</h2>
             <div style="max-height: 450px; overflow-y: auto; padding-right: 12px; font-size: 14px; line-height: 1.6;">
-                <p><strong>Last Updated: December 2025</strong></p>
+                <p><strong>Last Updated: March 2026</strong></p>
 
                 <h3 style="color: #1976d2;">1. Acceptance of Terms</h3>
                 <p>By using FinalGrade.io, you agree to these Terms of Service. If you do not agree, please do not use this service.</p>
@@ -597,6 +669,10 @@
         bindTaskbarMenu('quickActionsBtn', 'quickActionsMenu');
         bindTaskbarMenu('taskbarSettingsBtn', 'taskbarSettingsMenu');
         bindTaskbarMenu('taskbarHelpBtn', 'taskbarHelpMenu');
+        document.getElementById('quickActionsBtn')?.addEventListener('dblclick', () => window.navigateToView?.('whatsNew'));
+        document.getElementById('taskbarSettingsBtn')?.addEventListener('dblclick', () => window.navigateToView?.('settings'));
+
+        document.getElementById('taskbarBrand')?.addEventListener('click', () => window.navigateToView?.('home'));
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#taskbar') && !e.target.closest('#taskbarDropdowns')) closeAllTaskbarMenus();
@@ -606,12 +682,12 @@
             btn.addEventListener('click', () => {
                 const action = btn.getAttribute('data-taskbar-action');
                 closeAllTaskbarMenus();
-                if (action === 'whats-new') openModalById('whatsNewModal');
-                if (action === 'teacher') document.querySelector(".tab-link[data-view='teacher']")?.click();
-                if (action === 'student') document.querySelector(".tab-link[data-view='student']")?.click();
+                if (action === 'whats-new') window.navigateToView?.('whatsNew');
+                if (action === 'teacher') window.navigateToView?.('teacher');
+                if (action === 'student') window.navigateToView?.('student');
                 if (action === 'open-reset') document.getElementById('resetEverythingBtn')?.click();
-                if (action === 'privacy') openModalById('privacyModal');
-                if (action === 'terms') openModalById('termsModal');
+                if (action === 'privacy') window.navigateToView?.('privacy');
+                if (action === 'terms') window.navigateToView?.('terms');
                 if (action === 'shortcuts') openModalById('shortcutsModal');
                 if (action === 'open-welcome') openModalById('introModal');
                 if (action === 'toggle-animations') document.body.classList.toggle('reduce-motion');
@@ -630,31 +706,31 @@
         // Info Modal Links
         document.getElementById('whatsNewLink').addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('whatsNewModal').style.display = 'block';
+            window.navigateToView?.('whatsNew');
         });
 
         document.getElementById('privacyLink').addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('privacyModal').style.display = 'block';
+            window.navigateToView?.('privacy');
         });
 
         document.getElementById('termsLink').addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('termsModal').style.display = 'block';
+            window.navigateToView?.('terms');
         });
 
         // Close modals when clicking close button
         document.querySelectorAll('.close-modal-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const modal = btn.closest('.modal');
-                if (modal) modal.style.display = 'none';
+                if (modal) { modal.classList.add('closing'); setTimeout(() => { modal.style.display = 'none'; modal.classList.remove('closing'); }, 220); }
             });
         });
 
         // Close modals when clicking outside
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
+                e.target.classList.add('closing'); setTimeout(() => { e.target.style.display = 'none'; e.target.classList.remove('closing'); }, 220);
             }
         });
     </script>
