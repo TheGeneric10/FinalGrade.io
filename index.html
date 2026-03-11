@@ -233,6 +233,10 @@
 
             <div id="categoriesContainer"></div>
 
+            <button id="viewAllCategoriesBtn" class="teacher-dark-btn">
+                <span class="material-icons">view_list</span> View All Categories
+            </button>
+
             <button id="calculateBtn">Calculate Overall Grade</button>
 
             <button id="addCategoryBtn">
@@ -243,12 +247,16 @@
                 <span class="material-icons">refresh</span> Reset Everything
             </button>
 
-            <div class="bulk-action-buttons">
-                <button id="removeSelectedAssignmentsBtn" class="bulk-action-btn">
-                    <span class="material-icons">delete</span> Remove Selected Assignments
+            <button id="viewAllAssignmentsBtn" class="bulk-action-btn">
+                <span class="material-icons">format_list_bulleted</span> All Assignments
+            </button>
+
+            <div class="bulk-action-buttons legacy-hidden" aria-hidden="true">
+                <button id="removeSelectedAssignmentsBtn" class="bulk-action-btn" tabindex="-1">
+                    <span class="material-icons">delete</span> Remove Selected Assignments (Legacy)
                 </button>
-                <button id="removeSelectedCategoriesBtn" class="bulk-action-btn">
-                    <span class="material-icons">delete</span> Remove Selected Categories
+                <button id="removeSelectedCategoriesBtn" class="bulk-action-btn" tabindex="-1">
+                    <span class="material-icons">delete</span> Remove Selected Categories (Legacy)
                 </button>
             </div>
 
@@ -411,6 +419,18 @@
         </div>
     </div>
 
+    <div id="categoriesOverviewModal" class="modal">
+        <div class="modal-content categories-overview-content">
+            <span class="close-modal-btn material-icons">close</span>
+            <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">All Categories</h2>
+            <p style="margin: 0 0 12px; color: #666; font-size: 14px;">Use this screen to manage category order and quick actions when drag-and-drop is unavailable.</p>
+            <div id="categoriesOverviewList" class="categories-overview-list"></div>
+            <div class="modal-buttons" style="margin-top: 16px;">
+                <button id="categoriesOverviewCloseBtn" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="appFooter">
         <span style="font-size: 18px;">🔥</span>
         <span>2026 TheGeneric. FinalGrade.io. All Rights Reserved. | Version 26.1.10</span>
@@ -546,13 +566,9 @@
     <div id="removeAssignmentsModal" class="multiselect-modal">
         <div class="multiselect-modal-content">
             <span class="close-modal-btn material-icons" onclick="document.getElementById('removeAssignmentsModal').style.display='none'">close</span>
-            <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">Select Assignments to Remove</h2>
-            <div style="padding: 10px 0; border-bottom: 1px solid #eee; margin-bottom: 5px;">
-                <label style="cursor: pointer; padding: 0 15px; display: flex; align-items: center;"><input type="checkbox" id="selectAllAssignmentsCheckbox" style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> <strong>Select All</strong></label>
-            </div>
-            <div id="assignmentsMultiselectContainer" class="multiselect-items-container"></div>
+            <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">All Assignments</h2>
+            <div id="assignmentsMultiselectContainer" class="all-assignments-container"></div>
             <div class="multiselect-modal-buttons">
-                <button class="multiselect-delete-btn" id="confirmDeleteAssignmentsBtn">Delete Selected</button>
                 <button class="multiselect-cancel-btn" onclick="document.getElementById('removeAssignmentsModal').style.display='none'">Cancel</button>
             </div>
         </div>
