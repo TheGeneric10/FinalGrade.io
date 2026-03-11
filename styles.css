@@ -126,6 +126,16 @@ html {
     border-radius: 999px;
     font-weight: 600;
     letter-spacing: 0.2px;
+    cursor: default;
+  }
+
+  button.taskbar-chip {
+    cursor: pointer;
+  }
+
+  .nav-chip.active {
+    background: rgba(255,255,255,0.32);
+    border-color: rgba(255,255,255,0.85);
   }
 
   .taskbar-chip.latest {
@@ -169,18 +179,25 @@ html {
 
   .taskbar-dropdown {
     display: none;
-    min-width: 250px;
+    min-width: 340px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 12px 28px rgba(0,0,0,0.12);
     border: 1px solid #e8eef6;
     overflow: hidden;
     transform-origin: top right;
+    touch-action: none;
+    cursor: grab;
   }
 
   .taskbar-dropdown.open {
     display: block;
     animation: popOut 0.25s ease;
+  }
+
+  .taskbar-dropdown.dragging {
+    cursor: grabbing;
+    opacity: 0.96;
   }
 
   .taskbar-dropdown button {
@@ -249,6 +266,24 @@ html {
     transition: border-bottom-color 0.3s ease, color 0.3s ease;
     color: #555;
     font-family: 'Inter', sans-serif;
+  }
+
+  .page-view .container {
+    margin-top: 16px;
+  }
+
+  .home-news-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .news-card,
+  .policy-page {
+    background: #fff;
+    border: 1px solid #dde8f8;
+    border-radius: 14px;
+    padding: 16px;
   }
   
   .tab-link:hover {
@@ -432,12 +467,21 @@ html {
     background-color: rgba(0,0,0,0.4);
     padding-top: 60px;
     box-sizing: border-box;
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn 0.25s ease-in;
+  }
+
+  .modal.closing {
+    animation: fadeOut 0.22s ease-out forwards;
   }
   
   @keyframes fadeIn {
     from { background-color: rgba(0,0,0,0); }
     to { background-color: rgba(0,0,0,0.4); }
+  }
+
+  @keyframes fadeOut {
+    from { background-color: rgba(0,0,0,0.4); }
+    to { background-color: rgba(0,0,0,0); }
   }
   
   .modal-content {
@@ -467,6 +511,44 @@ html {
   
   .modal-content.move-up {
     animation: slideDown 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .number-input-shell {
+    display: inline-flex;
+    align-items: stretch;
+    border: 2px solid #1976d2;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .number-input-shell input[type="number"] {
+    border: none !important;
+    border-radius: 0 !important;
+    min-width: 64px;
+    padding-right: 6px;
+  }
+
+  .number-stepper-controls {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #bdd7f6;
+    width: 18px;
+  }
+
+  .stepper-btn {
+    border: none;
+    background: linear-gradient(180deg, #f2f8ff, #e2efff);
+    color: #2a5e99;
+    line-height: 1;
+    padding: 0;
+    height: 50%;
+    font-size: 8px;
+    cursor: pointer;
+  }
+
+  .stepper-btn:hover {
+    background: #d6e8ff;
   }
   
   @keyframes slideDown {
@@ -702,6 +784,20 @@ html {
     background: #f5f5f5;
     color: #333;
     transition: all 0.3s ease;
+  }
+
+  input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button {
+    opacity: 1;
+    height: 22px;
+    width: 16px;
+    background: linear-gradient(180deg, #dcecff, #ffffff);
+    border-left: 1px solid #9bc1f1;
+    border-radius: 4px;
   }
   
   .graded-pts-input:focus, .total-pts-input:focus, .multiplier-pts-input:focus {

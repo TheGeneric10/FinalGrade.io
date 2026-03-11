@@ -45,7 +45,7 @@ const overallResult = document.getElementById("overallResult");
 const uncappedOverallGrade = document.getElementById("uncappedOverallGrade");
 const maxGradeCapacityInput = document.getElementById("maxGradeCapacity");
 
-const tabLinks = document.querySelectorAll(".tab-link");
+const tabLinks = document.querySelectorAll(".nav-chip[data-view]");
 const viewContents = document.querySelectorAll(".view-content");
 
 const studentOverallGradeDiv = document.getElementById("studentOverallGrade");
@@ -218,6 +218,120 @@ function applyParsedStatusToSelects(assignmentEl, statuses) {
     updateAssignmentLineColor(assignmentEl, s1, s2, s3);
 }
 
+
+function getCommentPreviewText(comment, assignmentName) {
+    const normalized = (comment || '').toString().trim();
+    if (!normalized) return '';
+    const oneLine = normalized.split('\n')[0];
+    const titleLen = (assignmentName || '').toString().trim().length;
+    const maxLen = titleLen > 28 ? 36 : 68;
+    if (oneLine.length <= maxLen) return oneLine;
+    return oneLine.slice(0, Math.max(10, maxLen - 1)).trimEnd() + '…';
+}
+
+function enhanceNumberInput(input) {
+    if (!input || input.dataset.enhancedStepper === '1') return;
+    input.dataset.enhancedStepper = '1';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'number-input-shell';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    const controls = document.createElement('div');
+    controls.className = 'number-stepper-controls';
+    const upBtn = document.createElement('button');
+    upBtn.type = 'button';
+    upBtn.className = 'stepper-btn up';
+    upBtn.innerHTML = '&#9650;';
+    const downBtn = document.createElement('button');
+    downBtn.type = 'button';
+    downBtn.className = 'stepper-btn down';
+    downBtn.innerHTML = '&#9660;';
+    controls.appendChild(upBtn);
+    controls.appendChild(downBtn);
+    wrapper.appendChild(controls);
+
+    const step = (dir) => {
+        if (typeof input.stepUp === 'function') {
+            if (dir > 0) input.stepUp(); else input.stepDown();
+        } else {
+            const current = parseFloat(input.value || 0) || 0;
+            const delta = parseFloat(input.step || '1') || 1;
+            input.value = String(current + dir * delta);
+        }
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.focus();
+    };
+
+    upBtn.addEventListener('click', () => step(1));
+    downBtn.addEventListener('click', () => step(-1));
+
+    input.addEventListener('wheel', (event) => {
+        if (document.activeElement === input) {
+            event.preventDefault();
+            step(event.deltaY < 0 ? 1 : -1);
+        }
+    }, { passive: false });
+}
+
+function setupTaskbarPanelDrag() {
+    const panels = document.querySelectorAll('.taskbar-dropdown');
+    panels.forEach(panel => {
+        let drag = null;
+        panel.addEventListener('pointerdown', (event) => {
+            if (event.target.closest('button')) return;
+            drag = {
+                id: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                origX: parseFloat(panel.dataset.dragX || '0'),
+                origY: parseFloat(panel.dataset.dragY || '0')
+            };
+            panel.classList.add('dragging');
+            try { panel.setPointerCapture(event.pointerId); } catch (e) { }
+        });
+        panel.addEventListener('pointermove', (event) => {
+            if (!drag || drag.id !== event.pointerId) return;
+            const dx = event.clientX - drag.startX;
+            const dy = event.clientY - drag.startY;
+            const x = drag.origX + dx;
+            const y = drag.origY + dy;
+            panel.dataset.dragX = String(x);
+            panel.dataset.dragY = String(y);
+            panel.style.transform = `translate(${x}px, ${y}px)`;
+        });
+        const end = (event) => {
+            if (!drag || drag.id !== event.pointerId) return;
+            drag = null;
+            panel.classList.remove('dragging');
+        };
+        panel.addEventListener('pointerup', end);
+        panel.addEventListener('pointercancel', end);
+    });
+}
+
+function navigateToView(view) {
+    const normalized = view || 'home';
+    viewContents.forEach(v => v.classList.remove('active'));
+    tabLinks.forEach(l => l.classList.remove('active'));
+    const target = document.getElementById(normalized + 'View');
+    if (target) target.classList.add('active');
+    const navBtn = document.querySelector(`.nav-chip[data-view='${normalized}']`);
+    if (navBtn) navBtn.classList.add('active');
+
+    if (normalized === 'student') populateStudentView();
+
+    if (normalized === 'teacher' || normalized === 'student') {
+        window.location.hash = `#Gradebook/${normalized}`;
+    } else if (normalized === 'home') {
+        window.location.hash = '#Home';
+    } else {
+        window.location.hash = `#${normalized}`;
+    }
+}
+window.navigateToView = navigateToView;
+
 /* Modal utilities */
 function showModal(modalElement, mode = null, element = null) {
     if (!modalElement) return;
@@ -261,9 +375,11 @@ function showModal(modalElement, mode = null, element = null) {
 function hideModal(modalElement) {
     if (!modalElement) return;
     const modalContent = modalElement.querySelector(".modal-content");
+    modalElement.classList.add('closing');
     if (modalContent) modalContent.classList.add("move-up");
     setTimeout(() => {
         modalElement.style.display = "none";
+        modalElement.classList.remove('closing');
         if (modalContent) modalContent.classList.remove("move-up");
         if (modalElement === categoryModal) currentCategoryElement = null;
         if (modalElement === removeModal) categoryToRemove = null;
@@ -306,7 +422,7 @@ function createCategory(name, weight) {
     const startPointerDrag = (event) => {
         if (event.pointerType === 'mouse') return;
         if (!event.isPrimary) return;
-        if (event.target.closest('.cat-controls, .material-icons, button, input, select')) return;
+        if (event.target.closest('.cat-controls, .material-icons, .material-symbols-outlined, button, input, select')) return;
 
         pointerDragState = {
             dragged: catDiv,
@@ -586,9 +702,11 @@ function addAssignmentRow(assignmentsDiv, assignmentData = {}) {
 
     const preview = document.createElement("div");
     preview.className = "teacher-comment-preview";
-    preview.textContent = assignmentData.comment ? assignmentData.comment.split('\n')[0] : "";
+    preview.textContent = getCommentPreviewText(assignmentData.comment || '', nameInput.value || '');
     if (!assignmentData.comment || assignmentData.comment.trim() === "") preview.style.display = "none";
     assignmentDiv.appendChild(preview);
+
+    [totalPtsInput, multiplierPtsInput].forEach(enhanceNumberInput);
 
     assignmentsDiv.appendChild(assignmentDiv);
 
@@ -640,6 +758,11 @@ function setupAssignmentEvents(assignmentDiv, assignmentsDiv) {
             saveData();
             e.stopPropagation();
         });
+    }
+
+    const nameInput = assignmentDiv.querySelector(".assn-name-input");
+    if (nameInput) {
+        nameInput.addEventListener("input", () => updatePreviewAndStatus(assignmentDiv));
     }
 
     const statusMain = assignmentDiv.querySelector(".status-dropdown-main");
@@ -705,7 +828,12 @@ function setupAssignmentEvents(assignmentDiv, assignmentsDiv) {
             if (parsed.statuses && parsed.statuses.length) {
                 applyParsedStatusToSelects(assignmentDiv, parsed.statuses);
             } else {
-                const statusMain = assignmentDiv.querySelector(".status-dropdown-main");
+                const nameInput = assignmentDiv.querySelector(".assn-name-input");
+    if (nameInput) {
+        nameInput.addEventListener("input", () => updatePreviewAndStatus(assignmentDiv));
+    }
+
+    const statusMain = assignmentDiv.querySelector(".status-dropdown-main");
                 const statusSec = assignmentDiv.querySelector(".status-dropdown-secondary");
                 const statusTer = assignmentDiv.querySelector(".status-dropdown-tertiary");
                 if (statusMain) statusMain.value = "";
@@ -723,7 +851,8 @@ function updatePreviewAndStatus(assignmentDiv) {
     const comment = assignmentDiv.getAttribute("data-comment") || "";
     if (preview) {
         if (comment && comment.trim() !== "") {
-            preview.textContent = comment.split('\n')[0];
+            const assnName = assignmentDiv.querySelector('.assn-name-input') ? assignmentDiv.querySelector('.assn-name-input').value : '';
+            preview.textContent = getCommentPreviewText(comment, assnName);
             preview.style.display = "block";
         } else {
             preview.textContent = "";
@@ -1135,8 +1264,7 @@ function populateStudentView() {
 
             const preview = document.createElement("div");
             preview.className = "student-teacher-comment-preview";
-            if (comment && comment.trim() !== "") preview.textContent = comment.split('\n')[0];
-            else preview.textContent = "";
+            preview.textContent = (comment && comment.trim() !== "") ? getCommentPreviewText(comment, assnName) : "";
             row.appendChild(preview);
 
             const statusContainer = document.createElement("div");
@@ -1628,17 +1756,21 @@ window.onload = function() {
 
     tabLinks.forEach(link => {
         link.addEventListener("click", function() {
-            const view = this.getAttribute("data-view");
-            tabLinks.forEach(l => l.classList.remove("active"));
-            viewContents.forEach(v => v.classList.remove("active"));
-            this.classList.add('active');
-            const viewEl = document.getElementById(view + "View");
-            if (viewEl) viewEl.classList.add("active");
-            if (view === 'student') {
-                populateStudentView();
-            }
+            navigateToView(this.getAttribute("data-view"));
         });
     });
+
+    const hash = (window.location.hash || '').toLowerCase();
+    if (hash.includes('/teacher')) navigateToView('teacher');
+    else if (hash.includes('/student')) navigateToView('student');
+    else if (hash === '#whatsnew') navigateToView('whatsNew');
+    else if (hash === '#privacy') navigateToView('privacy');
+    else if (hash === '#terms') navigateToView('terms');
+    else if (hash === '#settings') navigateToView('settings');
+    else navigateToView('home');
+
+    setupTaskbarPanelDrag();
+    document.querySelectorAll('input[type="number"]').forEach(enhanceNumberInput);
 
     reformatAllDisplays();
 };
