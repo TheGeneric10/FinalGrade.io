@@ -62,6 +62,8 @@ const detailsAssignmentStatusSpan = document.getElementById("detailsAssignmentSt
 const detailsAssignmentCommentP = document.getElementById("detailsAssignmentComment");
 const detailsCloseBtn = document.getElementById("detailsCloseBtn");
 const viewAllCategoriesBtn = document.getElementById("viewAllCategoriesBtn");
+const bulkDeleteCategoriesBtn = document.getElementById("bulkDeleteCategoriesBtn");
+const bulkDeleteAssignmentsBtn = document.getElementById("bulkDeleteAssignmentsBtn");
 const categoriesOverviewModal = document.getElementById("categoriesOverviewModal");
 const categoriesOverviewList = document.getElementById("categoriesOverviewList");
 const categoriesOverviewCloseBtn = document.getElementById("categoriesOverviewCloseBtn");
@@ -1518,9 +1520,12 @@ function showAssignmentsMultiselect() {
 
             const row = document.createElement("div");
             row.className = "all-assignments-row";
+            const comment = asn.getAttribute("data-comment") || "";
+            const commentPreview = comment.trim() ? ` • ${comment.trim().slice(0, 70)}` : "";
             row.innerHTML = `
                 <div class="all-assignments-name">${escapeHtml(name)}</div>
                 <div class="all-assignments-meta">${escapeHtml(graded)} / ${escapeHtml(total)} • x${escapeHtml(multiplier)} • ${escapeHtml(statusText)}</div>
+                <div class="all-assignments-submeta">Category: ${escapeHtml(catName)}${escapeHtml(commentPreview)}</div>
             `;
 
             const deleteBtn = document.createElement("button");
@@ -1548,6 +1553,86 @@ function showAssignmentsMultiselect() {
     }
 
     document.getElementById("removeAssignmentsModal").style.display = "block";
+}
+
+function showAssignmentsBulkMultiselect() {
+    const container = document.getElementById("assignmentsBulkMultiselectContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const categories = document.querySelectorAll(".category");
+    let assignmentCount = 0;
+
+    categories.forEach(cat => {
+        const catName = cat.getAttribute("data-name") || "Untitled Category";
+        const assignments = cat.querySelectorAll(".assignment");
+
+        assignments.forEach((asn, idx) => {
+            const assnName = asn.querySelector(".assn-name-input") ? asn.querySelector(".assn-name-input").value : "Unnamed";
+
+            const item = document.createElement("div");
+            item.className = "multiselect-item";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "assignment-checkbox";
+            checkbox.setAttribute("data-category-name", catName);
+            checkbox.setAttribute("data-assignment-index", String(idx));
+            const label = document.createElement("label");
+            label.textContent = `${assnName} (${catName})`;
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            container.appendChild(item);
+            assignmentCount++;
+        });
+
+        group.appendChild(body);
+        container.appendChild(group);
+    });
+
+    if (assignmentCount === 0) {
+        container.innerHTML = "<p style='text-align: center; padding: 20px; color: #999;'>No assignments available</p>";
+    }
+
+    const selectAllCheckbox = document.getElementById("selectAllAssignmentsCheckbox");
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.onchange = () => {
+            const checkboxes = document.querySelectorAll(".assignment-checkbox");
+            checkboxes.forEach(cb => { cb.checked = selectAllCheckbox.checked; });
+        };
+    }
+
+    document.getElementById("removeAssignmentsBulkModal").style.display = "block";
+}
+
+function deleteSelectedAssignments() {
+    const checkboxes = document.querySelectorAll(".assignment-checkbox:checked");
+    const toDelete = [];
+
+    checkboxes.forEach(cb => {
+        toDelete.push({
+            categoryName: cb.getAttribute("data-category-name"),
+            assignmentIndex: parseInt(cb.getAttribute("data-assignment-index"), 10)
+        });
+    });
+
+    if (toDelete.length === 0) {
+        warn("No assignments selected");
+        return;
+    }
+
+    toDelete.sort((a, b) => b.assignmentIndex - a.assignmentIndex);
+
+    toDelete.forEach(item => {
+        const cat = Array.from(document.querySelectorAll(".category")).find(c => c.getAttribute("data-name") === item.categoryName);
+        if (!cat) return;
+        const assignments = cat.querySelectorAll(".assignment");
+        if (assignments[item.assignmentIndex]) assignments[item.assignmentIndex].remove();
+    });
+
+    saveData();
+    document.getElementById("removeAssignmentsBulkModal").style.display = "none";
+    if (document.getElementById("studentView").classList.contains("active")) populateStudentView();
 }
 
 function showCategoriesMultiselect() {
@@ -1616,18 +1701,20 @@ function setupModalControls() {
 
     // Bulk delete handlers
     const viewAllAssignmentsBtn = document.getElementById("viewAllAssignmentsBtn");
-    const removeSelectedAssignmentsBtn = document.getElementById("removeSelectedAssignmentsBtn");
-    const removeSelectedCategoriesBtn = document.getElementById("removeSelectedCategoriesBtn");
+    const confirmDeleteAssignmentsBtn = document.getElementById("confirmDeleteAssignmentsBtn");
     const confirmDeleteCategoriesBtn = document.getElementById("confirmDeleteCategoriesBtn");
 
     if (viewAllAssignmentsBtn) {
         viewAllAssignmentsBtn.addEventListener('click', showAssignmentsMultiselect);
     }
-    if (removeSelectedAssignmentsBtn) {
-        removeSelectedAssignmentsBtn.style.display = 'none';
+    if (bulkDeleteAssignmentsBtn) {
+        bulkDeleteAssignmentsBtn.addEventListener('click', showAssignmentsBulkMultiselect);
     }
-    if (removeSelectedCategoriesBtn) {
-        removeSelectedCategoriesBtn.style.display = 'none';
+    if (bulkDeleteCategoriesBtn) {
+        bulkDeleteCategoriesBtn.addEventListener('click', showCategoriesMultiselect);
+    }
+    if (confirmDeleteAssignmentsBtn) {
+        confirmDeleteAssignmentsBtn.addEventListener('click', deleteSelectedAssignments);
     }
     if (confirmDeleteCategoriesBtn) {
         confirmDeleteCategoriesBtn.addEventListener('click', deleteSelectedCategories);

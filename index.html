@@ -233,9 +233,23 @@
 
             <div id="categoriesContainer"></div>
 
-            <button id="viewAllCategoriesBtn" class="teacher-dark-btn">
-                <span class="material-icons">view_list</span> View All Categories
-            </button>
+            <div class="manager-action-row">
+                <button id="viewAllAssignmentsBtn" class="bulk-action-btn">
+                    <span class="material-icons">format_list_bulleted</span> All Grade Assignments
+                </button>
+                <button id="bulkDeleteAssignmentsBtn" class="manager-trash-btn" title="Bulk delete assignments" aria-label="Bulk delete assignments">
+                    <span class="material-icons">delete</span>
+                </button>
+            </div>
+
+            <div class="manager-action-row">
+                <button id="viewAllCategoriesBtn" class="teacher-dark-btn">
+                    <span class="material-icons">view_list</span> All Grade Categories
+                </button>
+                <button id="bulkDeleteCategoriesBtn" class="manager-trash-btn" title="Bulk delete categories" aria-label="Bulk delete categories">
+                    <span class="material-icons">delete</span>
+                </button>
+            </div>
 
             <button id="calculateBtn">Calculate Overall Grade</button>
 
@@ -246,19 +260,6 @@
             <button id="resetEverythingBtn" class="reset-btn">
                 <span class="material-icons">refresh</span> Reset Everything
             </button>
-
-            <button id="viewAllAssignmentsBtn" class="bulk-action-btn">
-                <span class="material-icons">format_list_bulleted</span> All Assignments
-            </button>
-
-            <div class="bulk-action-buttons legacy-hidden" aria-hidden="true">
-                <button id="removeSelectedAssignmentsBtn" class="bulk-action-btn" tabindex="-1">
-                    <span class="material-icons">delete</span> Remove Selected Assignments (Legacy)
-                </button>
-                <button id="removeSelectedCategoriesBtn" class="bulk-action-btn" tabindex="-1">
-                    <span class="material-icons">delete</span> Remove Selected Categories (Legacy)
-                </button>
-            </div>
 
             <div id="overallGradeSection">
                 <div id="decimalSelector" style="text-align: center; margin: 10px 0;">
@@ -585,6 +586,21 @@
             <div class="multiselect-modal-buttons">
                 <button class="multiselect-delete-btn" id="confirmDeleteCategoriesBtn">Delete Selected</button>
                 <button class="multiselect-cancel-btn" onclick="document.getElementById('removeCategoriesModal').style.display='none'">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="removeAssignmentsBulkModal" class="multiselect-modal">
+        <div class="multiselect-modal-content">
+            <span class="close-modal-btn material-icons" onclick="document.getElementById('removeAssignmentsBulkModal').style.display='none'">close</span>
+            <h2 style="margin-top: 0; border-bottom: 2px solid #1976d2; padding-bottom: 12px;">Select Assignments to Delete</h2>
+            <div style="padding: 10px 0; border-bottom: 1px solid #eee; margin-bottom: 5px;">
+                <label style="cursor: pointer; padding: 0 15px; display: flex; align-items: center;"><input type="checkbox" id="selectAllAssignmentsCheckbox" style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> <strong>Select All</strong></label>
+            </div>
+            <div id="assignmentsBulkMultiselectContainer" class="multiselect-items-container"></div>
+            <div class="multiselect-modal-buttons">
+                <button class="multiselect-delete-btn" id="confirmDeleteAssignmentsBtn">Delete Selected</button>
+                <button class="multiselect-cancel-btn" onclick="document.getElementById('removeAssignmentsBulkModal').style.display='none'">Cancel</button>
             </div>
         </div>
     </div>
