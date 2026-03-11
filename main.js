@@ -45,7 +45,7 @@ const overallResult = document.getElementById("overallResult");
 const uncappedOverallGrade = document.getElementById("uncappedOverallGrade");
 const maxGradeCapacityInput = document.getElementById("maxGradeCapacity");
 
-const tabLinks = document.querySelectorAll(".tab-link");
+const tabLinks = document.querySelectorAll(".nav-chip[data-view]");
 const viewContents = document.querySelectorAll(".view-content");
 
 const studentOverallGradeDiv = document.getElementById("studentOverallGrade");
@@ -61,6 +61,12 @@ const detailsAssignmentMultiplierSpan = document.getElementById("detailsAssignme
 const detailsAssignmentStatusSpan = document.getElementById("detailsAssignmentStatus");
 const detailsAssignmentCommentP = document.getElementById("detailsAssignmentComment");
 const detailsCloseBtn = document.getElementById("detailsCloseBtn");
+const viewAllCategoriesBtn = document.getElementById("viewAllCategoriesBtn");
+const bulkDeleteCategoriesBtn = document.getElementById("bulkDeleteCategoriesBtn");
+const bulkDeleteAssignmentsBtn = document.getElementById("bulkDeleteAssignmentsBtn");
+const categoriesOverviewModal = document.getElementById("categoriesOverviewModal");
+const categoriesOverviewList = document.getElementById("categoriesOverviewList");
+const categoriesOverviewCloseBtn = document.getElementById("categoriesOverviewCloseBtn");
 
 // helpers
 function warn(msg) { console.warn("[FG] " + msg); }
@@ -218,6 +224,155 @@ function applyParsedStatusToSelects(assignmentEl, statuses) {
     updateAssignmentLineColor(assignmentEl, s1, s2, s3);
 }
 
+
+function getCommentPreviewText(comment, assignmentName) {
+    const normalized = (comment || '').toString().trim();
+    if (!normalized) return '';
+    const oneLine = normalized.split('\n')[0];
+    const titleLen = (assignmentName || '').toString().trim().length;
+    const maxLen = titleLen > 28 ? 36 : 68;
+    if (oneLine.length <= maxLen) return oneLine;
+    return oneLine.slice(0, Math.max(10, maxLen - 1)).trimEnd() + '…';
+}
+
+function setupNumberInputWheelLock(input) {
+    if (!input || input.dataset.wheelLocked === '1') return;
+    input.dataset.wheelLocked = '1';
+
+    input.addEventListener('wheel', (event) => {
+        if (document.activeElement !== input) return;
+        event.preventDefault();
+
+        if (typeof input.stepUp === 'function') {
+            if (event.deltaY < 0) input.stepUp();
+            else input.stepDown();
+        }
+
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }, { passive: false });
+}
+
+function setupTaskbarPanelDrag() {
+    const panels = document.querySelectorAll('.taskbar-dropdown');
+    panels.forEach(panel => {
+        let drag = null;
+        panel.addEventListener('pointerdown', (event) => {
+            if (event.target.closest('button')) return;
+            drag = {
+                id: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                origX: parseFloat(panel.dataset.dragX || '0'),
+                origY: parseFloat(panel.dataset.dragY || '0')
+            };
+            panel.classList.add('dragging');
+            try { panel.setPointerCapture(event.pointerId); } catch (e) { }
+        });
+        panel.addEventListener('pointermove', (event) => {
+            if (!drag || drag.id !== event.pointerId) return;
+            const dx = event.clientX - drag.startX;
+            const dy = event.clientY - drag.startY;
+            const x = drag.origX + dx;
+            const y = drag.origY + dy;
+            panel.dataset.dragX = String(x);
+            panel.dataset.dragY = String(y);
+            panel.style.transform = `translate(${x}px, ${y}px)`;
+        });
+        const end = (event) => {
+            if (!drag || drag.id !== event.pointerId) return;
+            drag = null;
+            panel.classList.remove('dragging');
+        };
+        panel.addEventListener('pointerup', end);
+        panel.addEventListener('pointercancel', end);
+    });
+}
+
+function moveCategoryByOffset(categoryEl, offset) {
+    if (!categoryEl || !categoriesContainer || !offset) return;
+    if (offset < 0) {
+        const prev = categoryEl.previousElementSibling;
+        if (prev) categoriesContainer.insertBefore(categoryEl, prev);
+    } else {
+        const next = categoryEl.nextElementSibling;
+        if (next) categoriesContainer.insertBefore(next, categoryEl);
+    }
+    saveData();
+}
+
+function renderCategoriesOverview() {
+    if (!categoriesOverviewList) return;
+    const categories = Array.from(document.querySelectorAll('.category'));
+    categoriesOverviewList.innerHTML = '';
+
+    if (!categories.length) {
+        categoriesOverviewList.innerHTML = '<div class="category-overview-empty">No categories created yet.</div>';
+        return;
+    }
+
+    categories.forEach((cat, index) => {
+        const row = document.createElement('div');
+        row.className = 'category-overview-row';
+
+        const name = cat.getAttribute('data-name') || `Category ${index + 1}`;
+        const weight = cat.getAttribute('data-weight') || '';
+        const weightText = (weight && weight !== '0') ? `${formatNumberTrim(weight)}%` : 'Unweighted';
+
+        row.innerHTML = `
+            <div class="category-overview-info">
+                <div class="category-overview-title">${escapeHtml(name)}</div>
+                <div class="category-overview-weight">Weight: ${escapeHtml(weightText)}</div>
+            </div>
+            <div class="category-overview-actions">
+                <button type="button" class="move-up" title="Move up"><span class="material-icons">keyboard_arrow_up</span></button>
+                <button type="button" class="move-down" title="Move down"><span class="material-icons">keyboard_arrow_down</span></button>
+                <button type="button" class="edit" title="Edit"><span class="material-icons">edit</span></button>
+                <button type="button" class="delete" title="Delete"><span class="material-icons">delete</span></button>
+            </div>
+        `;
+
+        row.querySelector('.move-up')?.addEventListener('click', () => {
+            moveCategoryByOffset(cat, -1);
+            renderCategoriesOverview();
+        });
+        row.querySelector('.move-down')?.addEventListener('click', () => {
+            moveCategoryByOffset(cat, 1);
+            renderCategoriesOverview();
+        });
+        row.querySelector('.edit')?.addEventListener('click', () => {
+            showModal(categoryModal, 'edit', cat);
+        });
+        row.querySelector('.delete')?.addEventListener('click', () => {
+            hideModal(categoriesOverviewModal);
+            showModal(removeModal, null, cat);
+        });
+
+        categoriesOverviewList.appendChild(row);
+    });
+}
+
+function navigateToView(view) {
+    const normalized = view || 'home';
+    viewContents.forEach(v => v.classList.remove('active'));
+    tabLinks.forEach(l => l.classList.remove('active'));
+    const target = document.getElementById(normalized + 'View');
+    if (target) target.classList.add('active');
+    const navBtn = document.querySelector(`.nav-chip[data-view='${normalized}']`);
+    if (navBtn) navBtn.classList.add('active');
+
+    if (normalized === 'student') populateStudentView();
+
+    if (normalized === 'teacher' || normalized === 'student') {
+        window.location.hash = `#Gradebook/${normalized}`;
+    } else if (normalized === 'home') {
+        window.location.hash = '#Home';
+    } else {
+        window.location.hash = `#${normalized}`;
+    }
+}
+window.navigateToView = navigateToView;
+
 /* Modal utilities */
 function showModal(modalElement, mode = null, element = null) {
     if (!modalElement) return;
@@ -261,9 +416,11 @@ function showModal(modalElement, mode = null, element = null) {
 function hideModal(modalElement) {
     if (!modalElement) return;
     const modalContent = modalElement.querySelector(".modal-content");
+    modalElement.classList.add('closing');
     if (modalContent) modalContent.classList.add("move-up");
     setTimeout(() => {
         modalElement.style.display = "none";
+        modalElement.classList.remove('closing');
         if (modalContent) modalContent.classList.remove("move-up");
         if (modalElement === categoryModal) currentCategoryElement = null;
         if (modalElement === removeModal) categoryToRemove = null;
@@ -306,7 +463,7 @@ function createCategory(name, weight) {
     const startPointerDrag = (event) => {
         if (event.pointerType === 'mouse') return;
         if (!event.isPrimary) return;
-        if (event.target.closest('.cat-controls, .material-icons, button, input, select')) return;
+        if (event.target.closest('.cat-controls, .material-icons, .material-symbols-outlined, button, input, select')) return;
 
         pointerDragState = {
             dragged: catDiv,
@@ -586,9 +743,11 @@ function addAssignmentRow(assignmentsDiv, assignmentData = {}) {
 
     const preview = document.createElement("div");
     preview.className = "teacher-comment-preview";
-    preview.textContent = assignmentData.comment ? assignmentData.comment.split('\n')[0] : "";
+    preview.textContent = getCommentPreviewText(assignmentData.comment || '', nameInput.value || '');
     if (!assignmentData.comment || assignmentData.comment.trim() === "") preview.style.display = "none";
     assignmentDiv.appendChild(preview);
+
+    [gradedPtsInput, totalPtsInput, multiplierPtsInput].forEach(setupNumberInputWheelLock);
 
     assignmentsDiv.appendChild(assignmentDiv);
 
@@ -640,6 +799,11 @@ function setupAssignmentEvents(assignmentDiv, assignmentsDiv) {
             saveData();
             e.stopPropagation();
         });
+    }
+
+    const nameInput = assignmentDiv.querySelector(".assn-name-input");
+    if (nameInput) {
+        nameInput.addEventListener("input", () => updatePreviewAndStatus(assignmentDiv));
     }
 
     const statusMain = assignmentDiv.querySelector(".status-dropdown-main");
@@ -705,7 +869,12 @@ function setupAssignmentEvents(assignmentDiv, assignmentsDiv) {
             if (parsed.statuses && parsed.statuses.length) {
                 applyParsedStatusToSelects(assignmentDiv, parsed.statuses);
             } else {
-                const statusMain = assignmentDiv.querySelector(".status-dropdown-main");
+                const nameInput = assignmentDiv.querySelector(".assn-name-input");
+    if (nameInput) {
+        nameInput.addEventListener("input", () => updatePreviewAndStatus(assignmentDiv));
+    }
+
+    const statusMain = assignmentDiv.querySelector(".status-dropdown-main");
                 const statusSec = assignmentDiv.querySelector(".status-dropdown-secondary");
                 const statusTer = assignmentDiv.querySelector(".status-dropdown-tertiary");
                 if (statusMain) statusMain.value = "";
@@ -723,7 +892,8 @@ function updatePreviewAndStatus(assignmentDiv) {
     const comment = assignmentDiv.getAttribute("data-comment") || "";
     if (preview) {
         if (comment && comment.trim() !== "") {
-            preview.textContent = comment.split('\n')[0];
+            const assnName = assignmentDiv.querySelector('.assn-name-input') ? assignmentDiv.querySelector('.assn-name-input').value : '';
+            preview.textContent = getCommentPreviewText(comment, assnName);
             preview.style.display = "block";
         } else {
             preview.textContent = "";
@@ -1135,8 +1305,7 @@ function populateStudentView() {
 
             const preview = document.createElement("div");
             preview.className = "student-teacher-comment-preview";
-            if (comment && comment.trim() !== "") preview.textContent = comment.split('\n')[0];
-            else preview.textContent = "";
+            preview.textContent = (comment && comment.trim() !== "") ? getCommentPreviewText(comment, assnName) : "";
             row.appendChild(preview);
 
             const statusContainer = document.createElement("div");
@@ -1306,41 +1475,161 @@ function updateCategoryCommentDisplay(catDiv) {
 
 function showAssignmentsMultiselect() {
     const container = document.getElementById("assignmentsMultiselectContainer");
+    if (!container) return;
     container.innerHTML = "";
-    
+
+    const categories = Array.from(document.querySelectorAll(".category"));
+    let hasAssignments = false;
+
+    categories.forEach((cat) => {
+        const catName = cat.getAttribute("data-name") || "Untitled Category";
+        const assignments = Array.from(cat.querySelectorAll(".assignment"));
+        const group = document.createElement("details");
+        group.className = "all-assignments-category";
+        group.open = true;
+
+        const summary = document.createElement("summary");
+        summary.textContent = `${catName} (${assignments.length})`;
+        group.appendChild(summary);
+
+        const body = document.createElement("div");
+        body.className = "all-assignments-body";
+
+        if (!assignments.length) {
+            const empty = document.createElement("div");
+            empty.className = "all-assignments-empty";
+            empty.textContent = "No assignments in this category.";
+            body.appendChild(empty);
+        }
+
+        assignments.forEach((asn) => {
+            hasAssignments = true;
+            const name = asn.querySelector(".assn-name-input")?.value?.trim() || "Unnamed Assignment";
+            const graded = asn.querySelector(".graded-pts-input")?.value?.toString().trim() || "-";
+            const total = asn.querySelector(".total-pts-input")?.value?.toString().trim() || "-";
+            const multiplier = asn.querySelector(".multiplier-pts-input")?.value?.toString().trim() || "1";
+
+            const s1 = asn.querySelector(".status-dropdown-main")?.value || "";
+            const s2 = asn.querySelector(".status-dropdown-secondary")?.value || "";
+            const s3 = asn.querySelector(".status-dropdown-tertiary")?.value || "";
+            const statusParts = [];
+            if (s1) statusParts.push(normalizeStatusLabel(s1));
+            if (s1 === "Late" && s2) statusParts.push(normalizeStatusLabel(s2));
+            if (s2 === "TurnedIn" && s3) statusParts.push(normalizeStatusLabel(s3));
+            const statusText = statusParts.length ? statusParts.join(" / ") : "NOT SET";
+
+            const row = document.createElement("div");
+            row.className = "all-assignments-row";
+            const comment = asn.getAttribute("data-comment") || "";
+            const commentPreview = comment.trim() ? ` • ${comment.trim().slice(0, 70)}` : "";
+            row.innerHTML = `
+                <div class="all-assignments-name">${escapeHtml(name)}</div>
+                <div class="all-assignments-meta">${escapeHtml(graded)} / ${escapeHtml(total)} • x${escapeHtml(multiplier)} • ${escapeHtml(statusText)}</div>
+                <div class="all-assignments-submeta">Category: ${escapeHtml(catName)}${escapeHtml(commentPreview)}</div>
+            `;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "all-assignments-delete";
+            deleteBtn.title = "Delete assignment";
+            deleteBtn.innerHTML = '<span class="material-icons">delete</span>';
+            deleteBtn.addEventListener("click", () => {
+                asn.remove();
+                saveData();
+                showAssignmentsMultiselect();
+                if (document.getElementById("studentView").classList.contains("active")) populateStudentView();
+            });
+
+            row.appendChild(deleteBtn);
+            body.appendChild(row);
+        });
+
+        group.appendChild(body);
+        container.appendChild(group);
+    });
+
+    if (!hasAssignments) {
+        container.innerHTML = "<p style='text-align: center; padding: 20px; color: #999;'>No assignments available</p>";
+    }
+
+    document.getElementById("removeAssignmentsModal").style.display = "block";
+}
+
+function showAssignmentsBulkMultiselect() {
+    const container = document.getElementById("assignmentsBulkMultiselectContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
     const categories = document.querySelectorAll(".category");
     let assignmentCount = 0;
-    
+
     categories.forEach(cat => {
-        const catName = cat.getAttribute("data-name");
+        const catName = cat.getAttribute("data-name") || "Untitled Category";
         const assignments = cat.querySelectorAll(".assignment");
-        
+
         assignments.forEach((asn, idx) => {
             const assnName = asn.querySelector(".assn-name-input") ? asn.querySelector(".assn-name-input").value : "Unnamed";
-            
+
             const item = document.createElement("div");
             item.className = "multiselect-item";
-            item.innerHTML = `
-                <input type="checkbox" class="assignment-checkbox" data-category-name="${catName}" data-assignment-index="${idx}">
-                <label>${escapeHtml(assnName)} (${escapeHtml(catName)})</label>
-            `;
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "assignment-checkbox";
+            checkbox.setAttribute("data-category-name", catName);
+            checkbox.setAttribute("data-assignment-index", String(idx));
+            const label = document.createElement("label");
+            label.textContent = `${assnName} (${catName})`;
+            item.appendChild(checkbox);
+            item.appendChild(label);
             container.appendChild(item);
             assignmentCount++;
         });
     });
-    
+
     if (assignmentCount === 0) {
         container.innerHTML = "<p style='text-align: center; padding: 20px; color: #999;'>No assignments available</p>";
     }
-    
+
     const selectAllCheckbox = document.getElementById("selectAllAssignmentsCheckbox");
-    selectAllCheckbox.checked = false;
-    selectAllCheckbox.addEventListener("change", () => {
-        const checkboxes = document.querySelectorAll(".assignment-checkbox");
-        checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.onchange = () => {
+            const checkboxes = document.querySelectorAll(".assignment-checkbox");
+            checkboxes.forEach(cb => { cb.checked = selectAllCheckbox.checked; });
+        };
+    }
+
+    document.getElementById("removeAssignmentsBulkModal").style.display = "block";
+}
+
+function deleteSelectedAssignments() {
+    const checkboxes = document.querySelectorAll(".assignment-checkbox:checked");
+    const toDelete = [];
+
+    checkboxes.forEach(cb => {
+        toDelete.push({
+            categoryName: cb.getAttribute("data-category-name"),
+            assignmentIndex: parseInt(cb.getAttribute("data-assignment-index"), 10)
+        });
     });
-    
-    document.getElementById("removeAssignmentsModal").style.display = "block";
+
+    if (toDelete.length === 0) {
+        warn("No assignments selected");
+        return;
+    }
+
+    toDelete.sort((a, b) => b.assignmentIndex - a.assignmentIndex);
+
+    toDelete.forEach(item => {
+        const cat = Array.from(document.querySelectorAll(".category")).find(c => c.getAttribute("data-name") === item.categoryName);
+        if (!cat) return;
+        const assignments = cat.querySelectorAll(".assignment");
+        if (assignments[item.assignmentIndex]) assignments[item.assignmentIndex].remove();
+    });
+
+    saveData();
+    document.getElementById("removeAssignmentsBulkModal").style.display = "none";
+    if (document.getElementById("studentView").classList.contains("active")) populateStudentView();
 }
 
 function showCategoriesMultiselect() {
@@ -1377,38 +1666,6 @@ function showCategoriesMultiselect() {
     document.getElementById("removeCategoriesModal").style.display = "block";
 }
 
-function deleteSelectedAssignments() {
-    const checkboxes = document.querySelectorAll(".assignment-checkbox:checked");
-    const toDelete = [];
-    
-    checkboxes.forEach(cb => {
-        toDelete.push({
-            categoryName: cb.getAttribute("data-category-name"),
-            assignmentIndex: parseInt(cb.getAttribute("data-assignment-index"))
-        });
-    });
-    
-    if (toDelete.length === 0) {
-        warn("No assignments selected");
-        return;
-    }
-    
-    toDelete.sort((a, b) => b.assignmentIndex - a.assignmentIndex);
-    
-    toDelete.forEach(item => {
-        const cat = Array.from(document.querySelectorAll(".category")).find(c => c.getAttribute("data-name") === item.categoryName);
-        if (cat) {
-            const assignments = cat.querySelectorAll(".assignment");
-            if (assignments[item.assignmentIndex]) {
-                assignments[item.assignmentIndex].remove();
-            }
-        }
-    });
-    
-    saveData();
-    document.getElementById("removeAssignmentsModal").style.display = "none";
-}
-
 function deleteSelectedCategories() {
     const checkboxes = document.querySelectorAll(".category-checkbox:checked");
     const categories = Array.from(document.querySelectorAll(".category"));
@@ -1440,16 +1697,18 @@ function setupModalControls() {
     if (detailsCloseBtn) detailsCloseBtn.addEventListener('click', () => hideModal(assignmentDetailsModal));
 
     // Bulk delete handlers
-    const removeSelectedAssignmentsBtn = document.getElementById("removeSelectedAssignmentsBtn");
-    const removeSelectedCategoriesBtn = document.getElementById("removeSelectedCategoriesBtn");
+    const viewAllAssignmentsBtn = document.getElementById("viewAllAssignmentsBtn");
     const confirmDeleteAssignmentsBtn = document.getElementById("confirmDeleteAssignmentsBtn");
     const confirmDeleteCategoriesBtn = document.getElementById("confirmDeleteCategoriesBtn");
 
-    if (removeSelectedAssignmentsBtn) {
-        removeSelectedAssignmentsBtn.addEventListener('click', showAssignmentsMultiselect);
+    if (viewAllAssignmentsBtn) {
+        viewAllAssignmentsBtn.addEventListener('click', showAssignmentsMultiselect);
     }
-    if (removeSelectedCategoriesBtn) {
-        removeSelectedCategoriesBtn.addEventListener('click', showCategoriesMultiselect);
+    if (bulkDeleteAssignmentsBtn) {
+        bulkDeleteAssignmentsBtn.addEventListener('click', showAssignmentsBulkMultiselect);
+    }
+    if (bulkDeleteCategoriesBtn) {
+        bulkDeleteCategoriesBtn.addEventListener('click', showCategoriesMultiselect);
     }
     if (confirmDeleteAssignmentsBtn) {
         confirmDeleteAssignmentsBtn.addEventListener('click', deleteSelectedAssignments);
@@ -1462,12 +1721,14 @@ function setupModalControls() {
         if (categoryToRemove && categoryToRemove.parentNode) categoryToRemove.parentNode.removeChild(categoryToRemove);
         saveData();
         hideModal(removeModal);
+        renderCategoriesOverview();
     });
     if (removeAssignmentsOnlyBtn) removeAssignmentsOnlyBtn.addEventListener('click', () => {
         if (categoryToRemove) {
             const assignmentsDiv = categoryToRemove.querySelector('.assignments');
             if (assignmentsDiv) assignmentsDiv.innerHTML = '';
             saveData();
+            renderCategoriesOverview();
         }
         hideModal(removeModal);
     });
@@ -1481,6 +1742,7 @@ function setupModalControls() {
                 if (gradedInput) gradedInput.value = '';
             });
             saveData();
+            renderCategoriesOverview();
         }
         hideModal(removeModal);
     });
@@ -1531,6 +1793,7 @@ function setupModalControls() {
         }
         hideModal(categoryModal);
         saveData();
+        renderCategoriesOverview();
     });
 
     if (saveCommentBtn) saveCommentBtn.addEventListener('click', () => {
@@ -1561,6 +1824,15 @@ function setupModalControls() {
 
     const addCategoryBtn = document.getElementById('addCategoryBtn');
     if (addCategoryBtn) addCategoryBtn.addEventListener('click', () => showModal(categoryModal, 'create', null));
+    if (viewAllCategoriesBtn) {
+        viewAllCategoriesBtn.addEventListener('click', () => {
+            renderCategoriesOverview();
+            showModal(categoriesOverviewModal);
+        });
+    }
+    if (categoriesOverviewCloseBtn) {
+        categoriesOverviewCloseBtn.addEventListener('click', () => hideModal(categoriesOverviewModal));
+    }
 
     const resetEverythingBtn = document.getElementById('resetEverythingBtn');
     if (resetEverythingBtn) {
@@ -1628,17 +1900,21 @@ window.onload = function() {
 
     tabLinks.forEach(link => {
         link.addEventListener("click", function() {
-            const view = this.getAttribute("data-view");
-            tabLinks.forEach(l => l.classList.remove("active"));
-            viewContents.forEach(v => v.classList.remove("active"));
-            this.classList.add('active');
-            const viewEl = document.getElementById(view + "View");
-            if (viewEl) viewEl.classList.add("active");
-            if (view === 'student') {
-                populateStudentView();
-            }
+            navigateToView(this.getAttribute("data-view"));
         });
     });
+
+    const hash = (window.location.hash || '').toLowerCase();
+    if (hash.includes('/teacher')) navigateToView('teacher');
+    else if (hash.includes('/student')) navigateToView('student');
+    else if (hash === '#whatsnew') navigateToView('whatsNew');
+    else if (hash === '#privacy') navigateToView('privacy');
+    else if (hash === '#terms') navigateToView('terms');
+    else if (hash === '#settings') navigateToView('settings');
+    else navigateToView('home');
+
+    setupTaskbarPanelDrag();
+    document.querySelectorAll('input[type="number"]').forEach(setupNumberInputWheelLock);
 
     reformatAllDisplays();
 };
