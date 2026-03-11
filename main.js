@@ -1584,6 +1584,9 @@ function showAssignmentsBulkMultiselect() {
             container.appendChild(item);
             assignmentCount++;
         });
+
+        group.appendChild(body);
+        container.appendChild(group);
     });
 
     if (assignmentCount === 0) {

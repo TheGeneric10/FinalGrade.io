@@ -864,6 +864,20 @@ html {
     color: #333;
     transition: all 0.3s ease;
   }
+
+  input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button {
+    opacity: 1;
+    height: 22px;
+    width: 16px;
+    background: linear-gradient(180deg, #dcecff, #ffffff);
+    border-left: 1px solid #9bc1f1;
+    border-radius: 4px;
+  }
   
   .graded-pts-input:focus, .total-pts-input:focus, .multiplier-pts-input:focus {
     outline: none;
